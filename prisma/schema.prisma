@@ -11,8 +11,46 @@ datasource db {
     relationMode = "prisma"
 }
 
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Configuration {
+    id          String     @id @default(cuid())
+    name        String
+    baseTheme   Theme      @relation(fields: [baseThemeId], references: [id])
+    baseThemeId String
+    createdById String
+    instances   Instance[]
+    rules       Rule[]
+
+    @@index([createdById])
+}
+
+model Theme {
+    id            String          @id @default(cuid())
+    name          String
+    createdById   String
+    configuration Configuration[]
+    rules         Rule[]
+
+    @@index([createdById])
+}
+
+model Instance {
+    id              String        @id @default(cuid())
+    name            String
+    tags            String
+    configuration   Configuration @relation(fields: [configurationId], references: [id])
+    configurationId String
+
+    @@index([configurationId])
+}
+
+model Rule {
+    id              String        @id @default(cuid())
+    name            String
+    configuration   Configuration @relation(fields: [configurationId], references: [id])
+    configurationId String
+    condition       String
+    theme           Theme         @relation(fields: [themeId], references: [id])
+    themeId         String
+
+    @@index([configurationId])
 }

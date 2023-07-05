@@ -1,0 +1,3 @@
+type Condition = {
+  todo: string;
+};
