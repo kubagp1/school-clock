@@ -20,7 +20,7 @@ const DashboardLayout = ({ children }: { children: ReactElement }) => {
       </AppBar>
       <Toolbar />
       <Box>
-        <Container>{children}</Container>
+        <Container sx={{ pt: 2 }}>{children}</Container>
       </Box>
     </Box>
   );

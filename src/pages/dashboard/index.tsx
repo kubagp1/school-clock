@@ -86,7 +86,7 @@ function Dashboard() {
 
   return (
     <>
-      <Typography variant="h4" sx={{ mt: 2 }}>
+      <Typography variant="h4">
         {isUserLoaded && user !== null ? (
           <>
             Hello <b>{user.username}</b>!
