@@ -1,8 +1,9 @@
 import { Button, Select, TextField, Typography } from "@mui/material";
 import { useRef } from "react";
+import { getDashboardLayout } from "~/components/DashboardLayout";
 import { api } from "~/utils/api";
 
-export default function NewConfiguration() {
+function NewConfiguration() {
   const {
     data: themes,
     isError: isThemesError,
@@ -50,3 +51,7 @@ export default function NewConfiguration() {
     </div>
   );
 }
+
+NewConfiguration.getLayout = getDashboardLayout;
+
+export default NewConfiguration;

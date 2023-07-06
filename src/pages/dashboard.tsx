@@ -1,20 +1,18 @@
-import { UserButton, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import {
-  AppBar,
   Box,
   Button,
-  Container,
   Divider,
   Grid,
   Link,
   Paper,
   Stack,
-  Toolbar,
   Typography,
 } from "@mui/material";
 import { Fragment } from "react";
 import { api } from "~/utils/api";
 import NextLink from "next/link";
+import { getDashboardLayout } from "~/components/DashboardLayout";
 
 function Configurations() {
   const { data, isError, isLoading } = api.configuration.getAll.useQuery();
@@ -83,72 +81,58 @@ function Themes() {
   ));
 }
 
-export default function Dashboard() {
+function Dashboard() {
   const { user, isLoaded: isUserLoaded } = useUser();
 
   return (
-    <Box
-      sx={{
-        height: "100vh",
-        bgcolor: "#f5f5f5",
-      }}
-    >
-      <AppBar sx={{ bgcolor: "#fefefe", color: "#010101" }} elevation={2}>
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            school-clock Dashboard
-          </Typography>
-          <UserButton></UserButton>
-        </Toolbar>
-      </AppBar>
-      <Toolbar />
-      <Box>
-        <Container>
-          <Typography variant="h4" sx={{ mt: 2 }}>
-            {isUserLoaded && user !== null ? (
-              <>
-                Hello <b>{user.username}</b>!
-              </>
-            ) : (
-              "Hello!"
-            )}
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Stack sx={{ mt: 2 }}>
-                <Paper>
-                  <Typography variant="h5" sx={{ py: 1.5, p: 2 }}>
-                    Configurations
-                  </Typography>
-                  <Configurations />
-                  <Divider />
-                  <Box sx={{ display: "flex", justifyContent: "center" }}>
-                    <NextLink href="/dashboard/new-configuration">
-                      <Button sx={{ m: 2 }}>New configuration</Button>
-                    </NextLink>
-                  </Box>
-                </Paper>
-              </Stack>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Stack sx={{ mt: 2 }}>
-                <Paper>
-                  <Typography variant="h5" sx={{ py: 1.5, p: 2 }}>
-                    Themes
-                  </Typography>
-                  <Themes />
-                  <Divider />
-                  <Box sx={{ display: "flex", justifyContent: "center" }}>
-                    <NextLink href="/dashboard/new-theme">
-                      <Button sx={{ m: 2 }}>New theme</Button>
-                    </NextLink>
-                  </Box>
-                </Paper>
-              </Stack>
-            </Grid>
-          </Grid>
-        </Container>
-      </Box>
-    </Box>
+    <>
+      <Typography variant="h4" sx={{ mt: 2 }}>
+        {isUserLoaded && user !== null ? (
+          <>
+            Hello <b>{user.username}</b>!
+          </>
+        ) : (
+          "Hello!"
+        )}
+      </Typography>
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={6}>
+          <Stack sx={{ mt: 2 }}>
+            <Paper>
+              <Typography variant="h5" sx={{ py: 1.5, p: 2 }}>
+                Configurations
+              </Typography>
+              <Configurations />
+              <Divider />
+              <Box sx={{ display: "flex", justifyContent: "center" }}>
+                <NextLink href="/dashboard/new-configuration">
+                  <Button sx={{ m: 2 }}>New configuration</Button>
+                </NextLink>
+              </Box>
+            </Paper>
+          </Stack>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Stack sx={{ mt: 2 }}>
+            <Paper>
+              <Typography variant="h5" sx={{ py: 1.5, p: 2 }}>
+                Themes
+              </Typography>
+              <Themes />
+              <Divider />
+              <Box sx={{ display: "flex", justifyContent: "center" }}>
+                <NextLink href="/dashboard/new-theme">
+                  <Button sx={{ m: 2 }}>New theme</Button>
+                </NextLink>
+              </Box>
+            </Paper>
+          </Stack>
+        </Grid>
+      </Grid>
+    </>
   );
 }
+
+Dashboard.getLayout = getDashboardLayout;
+
+export default Dashboard;
