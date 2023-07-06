@@ -13,6 +13,7 @@ import { Fragment } from "react";
 import { api } from "~/utils/api";
 import NextLink from "next/link";
 import { getDashboardLayout } from "~/components/DashboardLayout";
+import Head from "next/head";
 
 function Configurations() {
   const { data, isError, isLoading } = api.configuration.getAll.useQuery();
@@ -86,6 +87,9 @@ function Dashboard() {
 
   return (
     <>
+      <Head>
+        <title>Dashboard</title>
+      </Head>
       <Typography variant="h4">
         {isUserLoaded && user !== null ? (
           <>

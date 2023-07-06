@@ -8,6 +8,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useRef } from "react";
 import { getDashboardLayout } from "~/components/DashboardLayout";
@@ -45,6 +46,9 @@ function NewConfiguration() {
 
   return (
     <>
+      <Head>
+        <title>New configuration</title>
+      </Head>
       <Typography variant="h4" sx={{ mb: 1 }}>
         New Configuration
       </Typography>
