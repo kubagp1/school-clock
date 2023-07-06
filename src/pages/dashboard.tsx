@@ -1,5 +1,4 @@
-import { UserButton, useUser } from "@clerk/nextjs";
-import { Padding } from "@mui/icons-material";
+import { UserButton } from "@clerk/nextjs";
 import {
   AppBar,
   Box,
@@ -10,65 +9,12 @@ import {
   Link,
   Paper,
   Stack,
-  ThemeProvider,
   Toolbar,
   Typography,
-  createTheme,
 } from "@mui/material";
 import { Fragment } from "react";
 import { api } from "~/utils/api";
-import { Configuration } from "~/utils/configuration";
-import { Theme } from "~/utils/theme";
 import NextLink from "next/link";
-
-// const configurations: Configuration[] = [
-//   {
-//     name: "ZST Default Configuration",
-//     id: "3094uyhtr",
-//     baseTheme: {
-//       id: "3094dfsdfwer4wtreg",
-//       name: "ZST Default Theme",
-//       todo: "Add theme here",
-//     },
-//     instances: [
-//       {
-//         id: "3094uyhtr",
-//         name: "ZST Zegar technikum",
-//         lastAlive: new Date().getMilliseconds(),
-//         tags: ["technikum"],
-//       },
-//     ],
-//     rules: [
-//       {
-//         id: "3094uyhtr",
-//         name: "Dzień ziemi",
-//         condition: {
-//           todo: "Add condition here",
-//         },
-//         themes: [
-//           {
-//             id: "3094dfsdfwer4wtreg",
-//             name: "ZST Dzień ziemi Theme",
-//             todo: "Add theme here",
-//           },
-//         ],
-//       },
-//     ],
-//   },
-// ];
-
-// const themes: Theme[] = [
-//   {
-//     id: "3094dfsdfwer4wtreg",
-//     name: "ZST Dzień ziemi Theme",
-//     todo: "Add theme here",
-//   },
-//   {
-//     id: "3094dfsdfwer4wtreg",
-//     name: "ZST Default Theme",
-//     todo: "Add theme here",
-//   },
-// ];
 
 function Configurations() {
   const { data, isError, isLoading } = api.configuration.getAll.useQuery();
@@ -193,27 +139,5 @@ export default function Dashboard() {
         </Container>
       </Box>
     </Box>
-    // <Container>
-    //   <Typography variant="h4" sx={{ textAlign: "center" }}>
-    //     Dashboard
-    //   </Typography>
-    //   <Typography variant="h5" sx={{ textAlign: "center" }}>
-    //     Configurations
-    //   </Typography>
-    //   <Link
-    //     href="/dashboard/new-configuration"
-    //     sx={{ display: "block", mx: "auto" }}
-    //   >
-    //     <Button sx={{ mx: "auto", display: "block" }}>New configuration</Button>
-    //   </Link>
-    //   <Configurations />
-    //   <Typography variant="h5" sx={{ textAlign: "center" }}>
-    //     Themes
-    //   </Typography>
-    //   <Link href="/dashboard/new-theme" sx={{ display: "block", mx: "auto" }}>
-    //     <Button sx={{ mx: "auto", display: "block" }}>New Theme</Button>
-    //   </Link>
-    //   <Themes />
-    // </Container>
   );
 }
