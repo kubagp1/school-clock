@@ -8,24 +8,33 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useRouter } from "next/router";
 import { useRef } from "react";
 import { getDashboardLayout } from "~/components/DashboardLayout";
 import { api } from "~/utils/api";
 
 function NewConfiguration() {
+  const utils = api.useContext();
+  const router = useRouter();
+
   const {
     data: themes,
     isError: isThemesError,
     isLoading: isThemesLoading,
   } = api.theme.getAll.useQuery();
+
   const nameRef = useRef<HTMLInputElement>(null);
   const themeRef = useRef<HTMLInputElement>(null);
 
-  const { mutate, isLoading } = api.configuration.create.useMutation();
+  const { mutate, isLoading: isMutationLoading } =
+    api.configuration.create.useMutation({
+      onSuccess: (newCfg) => {
+        utils.configuration.getAll.invalidate();
+        router.push(`/dashboard/configuration/${newCfg.id}`);
+      },
+    });
 
   const handleSubmit = () => {
-    console.log(nameRef.current);
-    console.log(themeRef.current);
     if (nameRef.current?.value && themeRef.current?.value) {
       mutate({
         name: nameRef.current.value,
@@ -58,7 +67,7 @@ function NewConfiguration() {
               <Select
                 inputRef={themeRef}
                 defaultValue={themes[0]?.id}
-                sx={{ minWidth: 200 }}
+                sx={{ minWidth: 210 }}
               >
                 {themes.map((theme) => (
                   <MenuItem key={theme.id} value={theme.id}>
@@ -70,10 +79,10 @@ function NewConfiguration() {
           </Grid>
         </Grid>
 
-        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
           <Button
             onClick={handleSubmit}
-            disabled={isLoading}
+            disabled={isMutationLoading}
             variant="contained"
           >
             Create new configuration
