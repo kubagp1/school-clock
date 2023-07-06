@@ -1,4 +1,4 @@
-import { UserButton } from "@clerk/nextjs";
+import { UserButton, useUser } from "@clerk/nextjs";
 import {
   AppBar,
   Box,
@@ -84,6 +84,8 @@ function Themes() {
 }
 
 export default function Dashboard() {
+  const { user, isLoaded: isUserLoaded } = useUser();
+
   return (
     <Box
       sx={{
@@ -91,7 +93,7 @@ export default function Dashboard() {
         bgcolor: "#f5f5f5",
       }}
     >
-      <AppBar>
+      <AppBar sx={{ bgcolor: "#fefefe", color: "#010101" }} elevation={2}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             school-clock Dashboard
@@ -102,6 +104,15 @@ export default function Dashboard() {
       <Toolbar />
       <Box>
         <Container>
+          <Typography variant="h4" sx={{ mt: 2 }}>
+            {isUserLoaded && user !== null ? (
+              <>
+                Hello <b>{user.username}</b>!
+              </>
+            ) : (
+              "Hello!"
+            )}
+          </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <Stack sx={{ mt: 2 }}>
