@@ -1,4 +1,13 @@
-import { Button, Select, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useRef } from "react";
 import { getDashboardLayout } from "~/components/DashboardLayout";
 import { api } from "~/utils/api";
@@ -26,29 +35,52 @@ function NewConfiguration() {
   };
 
   return (
-    <div>
-      <Typography variant="h4">New Configuration</Typography>
-      <TextField
-        required
-        type="text"
-        label="Configuration name"
-        inputRef={nameRef}
-      ></TextField>
-      <br />
-      {themes != undefined && (
-        <Select inputRef={themeRef} defaultValue={themes[0]?.id}>
-          {themes?.map((theme) => (
-            <option key={theme.id} value={theme.id}>
-              {theme.name}
-            </option>
-          ))}
-        </Select>
-      )}
-      <br />
-      <Button onClick={handleSubmit} disabled={isLoading}>
-        Create new configuration
-      </Button>
-    </div>
+    <>
+      <Typography variant="h4" sx={{ mb: 1 }}>
+        New Configuration
+      </Typography>
+      <Paper sx={{ p: 2 }}>
+        <Grid container>
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6">Name</Typography>
+            <TextField
+              required
+              type="text"
+              label="Configuration name"
+              inputRef={nameRef}
+            ></TextField>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6" sx={{ mt: 1 }}>
+              Base theme
+            </Typography>
+            {themes != undefined && (
+              <Select
+                inputRef={themeRef}
+                defaultValue={themes[0]?.id}
+                sx={{ minWidth: 200 }}
+              >
+                {themes.map((theme) => (
+                  <MenuItem key={theme.id} value={theme.id}>
+                    {theme.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
+          </Grid>
+        </Grid>
+
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            variant="contained"
+          >
+            Create new configuration
+          </Button>
+        </Box>
+      </Paper>
+    </>
   );
 }
 
