@@ -1,6 +1,7 @@
 import { createTRPCRouter } from "~/server/api/trpc";
 import { configurationRouter } from "./routers/configuration";
 import { themeRouter } from "./routers/themeRouter";
+import { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 
 /**
  * This is the primary router for your server.
@@ -14,3 +15,6 @@ export const appRouter = createTRPCRouter({
 
 // export type definition of API
 export type AppRouter = typeof appRouter;
+
+export type RouterInput = inferRouterInputs<AppRouter>;
+export type RouterOutput = inferRouterOutputs<AppRouter>;

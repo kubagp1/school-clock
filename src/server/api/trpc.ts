@@ -50,6 +50,8 @@ export const createInnerTRPCContext = (req: RequestLike) => {
 export const createTRPCContext = (opts: CreateNextContextOptions) =>
   createInnerTRPCContext(opts.req);
 
+export type TRPCContext = ReturnType<typeof createTRPCContext>;
+
 /**
  * 2. INITIALIZATION
  *
