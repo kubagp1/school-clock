@@ -1,6 +1,10 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
+import {
+  TRPCContext,
+  createTRPCRouter,
+  privateProcedure,
+} from "~/server/api/trpc";
 
 export const configurationRouter = createTRPCRouter({
   getAll: privateProcedure.query(({ ctx }) => {
@@ -57,4 +61,60 @@ export const configurationRouter = createTRPCRouter({
         },
       });
     }),
+  changeName: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await checkOwnership(ctx, input.id);
+
+      return ctx.prisma.configuration.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          name: input.name,
+        },
+      });
+    }),
+  changeBaseTheme: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        baseThemeId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await checkOwnership(ctx, input.id);
+
+      return ctx.prisma.configuration.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          baseTheme: {
+            connect: {
+              id: input.baseThemeId,
+            },
+          },
+        },
+      });
+    }),
 });
+
+async function checkOwnership(ctx: TRPCContext, configurationId: string) {
+  const configuration = await ctx.prisma.configuration.findUnique({
+    where: {
+      id: configurationId,
+    },
+  });
+
+  if (configuration?.createdById !== ctx.auth.userId) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+    });
+  }
+}
