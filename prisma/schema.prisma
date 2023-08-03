@@ -24,11 +24,11 @@ model Configuration {
 }
 
 model Theme {
-    id            String          @id @default(cuid())
-    name          String
-    createdById   String
-    configuration Configuration[]
-    rules         Rule[]
+    id             String          @id @default(cuid())
+    name           String
+    createdById    String
+    configurations Configuration[]
+    rules          Rule[]
 
     @@index([createdById])
 }
