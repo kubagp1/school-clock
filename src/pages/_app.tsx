@@ -3,6 +3,7 @@ import { api } from "~/utils/api";
 import "~/styles/globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { NextPage } from "next";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ReactElement, ReactNode } from "react";
 
 import "@fontsource/roboto/300.css";
@@ -24,6 +25,7 @@ const MyApp: AppType = ({ Component, pageProps }: AppPropsWithLayout) => {
   return (
     <ClerkProvider {...pageProps}>
       {getLayout(<Component {...pageProps} />)}
+      <ReactQueryDevtools initialIsOpen={false} />
     </ClerkProvider>
   );
 };
