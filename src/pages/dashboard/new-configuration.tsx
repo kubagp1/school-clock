@@ -15,7 +15,6 @@ import { getDashboardLayout } from "~/components/DashboardLayout";
 import { api } from "~/utils/api";
 
 function NewConfiguration() {
-  const utils = api.useContext();
   const router = useRouter();
 
   const {
@@ -30,7 +29,6 @@ function NewConfiguration() {
   const { mutate, isLoading: isMutationLoading } =
     api.configuration.create.useMutation({
       onSuccess: (newCfg) => {
-        utils.configuration.getAll.invalidate();
         router.push(`/dashboard/configuration/${newCfg.id}`);
       },
     });
