@@ -1,18 +1,13 @@
-import {
-  GetServerSideProps,
-  InferGetServerSidePropsType,
-  NextPage,
-} from "next";
+import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 
 import { api } from "~/utils/api";
 import {
+  Alert,
   Box,
   Button,
   Divider,
   Link,
-  MenuItem,
   Paper,
-  Select,
   TextField,
   Typography,
 } from "@mui/material";
@@ -20,11 +15,45 @@ import { createSSRHelpers } from "~/utils/ssrHelpers";
 import Head from "next/head";
 import { getDashboardLayout } from "~/components/DashboardLayout";
 import { NextPageWithLayout } from "~/pages/_app";
-import { useRef, useState } from "react";
-import { inferProcedureOutput } from "@trpc/server";
-import { AppRouter, RouterOutput } from "~/server/api/root";
+import { RefObject, useRef, useState } from "react";
+import { RouterOutput } from "~/server/api/root";
 import NextLink from "next/link";
 import SelectTheme from "~/components/SelectTheme";
+import { ErrorOutline } from "@mui/icons-material";
+import { CenteredLoading } from "~/components/Loading";
+
+function useEditableField<T>(
+  mutate: (value: T) => void,
+  reset: () => void,
+  ref: RefObject<HTMLElement & { value: T }>
+) {
+  const [isEditing, setIsEditing] = useState(false);
+
+  const startEdit = () => setIsEditing(true);
+
+  const cancelEdit = () => {
+    setIsEditing(false);
+    reset();
+  };
+
+  const saveEdit = () => {
+    if (ref.current?.value) {
+      mutate(ref.current.value);
+    }
+  };
+
+  const onSuccess = () => {
+    setIsEditing(false);
+  };
+
+  return {
+    isEditing,
+    startEdit,
+    cancelEdit,
+    saveEdit,
+    onSuccess,
+  };
+}
 
 function NameField(props: {
   configuration: RouterOutput["configuration"]["getById"];
@@ -33,48 +62,49 @@ function NameField(props: {
 
   const { configuration } = props;
 
-  const [isEditing, setIsEditing] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
 
-  const startEdit = () => setIsEditing(true);
-
-  const cancelEdit = () => setIsEditing(false);
-
-  const { mutate, isLoading, isError } =
+  const { mutate, isLoading, isError, reset } =
     api.configuration.changeName.useMutation({
       onSuccess: () => {
         utils.configuration.getAll.invalidate();
         utils.configuration.getById.invalidate(configuration.id);
-        setIsEditing(false);
+        onSuccess();
       },
     });
 
-  const saveEdit = () => {
-    if (nameRef.current?.value) {
-      mutate({
-        id: configuration.id,
-        name: nameRef.current.value,
-      });
-    }
-  };
+  const mutateWrapper = (value: string) =>
+    mutate({ id: configuration.id, name: value });
+
+  const { isEditing, startEdit, cancelEdit, saveEdit, onSuccess } =
+    useEditableField(mutateWrapper, reset, nameRef);
 
   return !isEditing ? (
     <Typography variant="h4">
       {configuration.name} <Button onClick={startEdit}>Edit name</Button>
     </Typography>
   ) : (
-    <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
-      <TextField
-        defaultValue={configuration.name}
-        label="Name"
-        variant="outlined"
-        inputRef={nameRef}
-      ></TextField>
-      <Button onClick={saveEdit}>Save</Button>
-      <Button color="error" onClick={cancelEdit}>
-        Cancel
-      </Button>
-    </Box>
+    <>
+      {isError && isEditing && (
+        <Alert severity="error" sx={{ my: 1 }}>
+          Error. Failed to change name.
+        </Alert>
+      )}
+      <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
+        <TextField
+          defaultValue={configuration.name}
+          label="Name"
+          variant="outlined"
+          inputRef={nameRef}
+        ></TextField>
+        <Button onClick={saveEdit} disabled={isLoading}>
+          Save
+        </Button>
+        <Button color="error" onClick={cancelEdit}>
+          Cancel
+        </Button>
+      </Box>
+    </>
   );
 }
 
@@ -85,60 +115,61 @@ function BaseThemeField(props: {
 
   const { configuration } = props;
 
-  const [isEditing, setIsEditing] = useState(false);
   const selectRef = useRef<HTMLSelectElement>(null);
 
-  const startEdit = () => setIsEditing(true);
-
-  const cancelEdit = () => setIsEditing(false);
-
-  const { mutate, isLoading, isError } =
+  const { mutate, isLoading, isError, reset } =
     api.configuration.changeBaseTheme.useMutation({
       onSuccess: () => {
         utils.configuration.getById.invalidate(configuration.id);
-        setIsEditing(false);
+        onSuccess();
       },
     });
 
-  const saveEdit = () => {
-    if (selectRef.current?.value) {
-      mutate({
-        id: configuration.id,
-        baseThemeId: selectRef.current.value,
-      });
-    }
-  };
+  const mutateWrapper = (value: string) =>
+    mutate({ id: configuration.id, baseThemeId: value });
+
+  const { isEditing, startEdit, cancelEdit, saveEdit, onSuccess } =
+    useEditableField(mutateWrapper, reset, selectRef);
 
   return (
-    <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
-      {!isEditing ? (
-        <>
-          <Link
-            component={NextLink}
-            href={`/dashboard/theme/${configuration.baseThemeId}`}
-          >
-            {configuration.baseTheme.name}
-          </Link>
-          <Button onClick={startEdit} disableRipple sx={{ ml: 2 }}>
-            Change base theme
-          </Button>
-        </>
-      ) : (
-        <>
-          <SelectTheme
-            defaultValue={configuration.baseThemeId}
-            inputRef={selectRef}
-            sx={{ mr: 1 }}
-            variant="outlined"
-            size="small"
-          ></SelectTheme>
-          <Button onClick={saveEdit}>Save</Button>
-          <Button color="error" onClick={cancelEdit} disableRipple>
-            Cancel
-          </Button>
-        </>
+    <>
+      {isError && isEditing && (
+        <Alert severity="error" sx={{ my: 1 }}>
+          Error. Failed to change base theme.
+        </Alert>
       )}
-    </Box>
+      <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
+        {!isEditing ? (
+          <>
+            <Link
+              component={NextLink}
+              href={`/dashboard/theme/${configuration.baseThemeId}`}
+            >
+              {configuration.baseTheme.name}
+            </Link>
+            <Button onClick={startEdit} disableRipple sx={{ ml: 2 }}>
+              Change base theme
+            </Button>
+          </>
+        ) : (
+          <>
+            <SelectTheme
+              defaultValue={configuration.baseThemeId}
+              inputRef={selectRef}
+              sx={{ mr: 1 }}
+              variant="outlined"
+              size="small"
+            ></SelectTheme>
+            <Button onClick={saveEdit} disabled={isLoading}>
+              Save
+            </Button>
+            <Button color="error" onClick={cancelEdit} disableRipple>
+              Cancel
+            </Button>
+          </>
+        )}
+      </Box>
+    </>
   );
 }
 
@@ -149,32 +180,32 @@ interface PageProps {
 const ConfigurationPage: NextPageWithLayout<
   InferGetServerSidePropsType<typeof getServerSideProps>
 > = (pageProps) => {
-  const utils = api.useContext();
-
   const { data, isError, isLoading } = api.configuration.getById.useQuery(
     pageProps.configurationId
   );
 
-  if (isLoading) return <Typography>Loading...</Typography>;
-  if (isError) return <Typography>Error</Typography>;
-
-  if (data === null) return <Typography>Not found</Typography>;
+  if (isLoading) return <CenteredLoading />;
+  if (isError || data === null)
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 2,
+          mt: 4,
+        }}
+      >
+        <ErrorOutline fontSize="large" />
+        <Typography variant="h5">Error</Typography>
+        <Typography>Failed to load configuration</Typography>
+        <Link component={NextLink} href="/dashboard">
+          <Button>Go back to the dashboard</Button>
+        </Link>
+      </Box>
+    );
 
   return (
-    // <div>
-    //   <Typography variant="h4">{data.name}</Typography>
-    //   <Typography variant="h5">Base theme</Typography>
-    //   <Typography variant="body1">{data.baseTheme.name}</Typography>
-    //   <Typography variant="h5">Rules</Typography>
-    //   <Typography variant="body1">
-    //     {data.rules.map((r) => r.name).join(", ")}
-    //   </Typography>
-    //   <Typography variant="h5">Instances</Typography>
-    //   <Typography variant="body1">
-    //     {data.instances.map((i) => i.name).join(", ")}
-    //   </Typography>
-    // </div>
-
     <>
       <Head>
         <title>{data.name} | Configuration</title>
