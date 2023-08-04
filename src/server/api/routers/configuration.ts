@@ -6,6 +6,8 @@ import {
   privateProcedure,
 } from "~/server/api/trpc";
 
+const configurationNameSchema = z.string().trim().min(1);
+
 export const configurationRouter = createTRPCRouter({
   getAll: privateProcedure.query(({ ctx }) => {
     return ctx.prisma.configuration.findMany({
@@ -44,7 +46,7 @@ export const configurationRouter = createTRPCRouter({
   create: privateProcedure
     .input(
       z.object({
-        name: z.string(),
+        name: configurationNameSchema,
         baseThemeId: z.string(),
       })
     )
@@ -65,7 +67,7 @@ export const configurationRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        name: z.string(),
+        name: configurationNameSchema,
       })
     )
     .mutation(async ({ ctx, input }) => {
