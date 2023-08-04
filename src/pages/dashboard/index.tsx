@@ -14,16 +14,45 @@ import { api } from "~/utils/api";
 import NextLink from "next/link";
 import { getDashboardLayout } from "~/components/DashboardLayout";
 import Head from "next/head";
+import { CenteredLoading } from "~/components/Loading";
+import { ErrorOutline } from "@mui/icons-material";
+
+function Error(props: { message: string }) {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        flexDirection: "column",
+        gap: 1,
+        my: 2,
+        px: 2,
+        textAlign: "center",
+      }}
+    >
+      <ErrorOutline fontSize="large" />
+      <Typography variant="h5">Error</Typography>
+      <Typography variant="body1">{props.message}</Typography>
+    </Box>
+  );
+}
 
 function Configurations() {
   const { data, isError, isLoading } = api.configuration.getAll.useQuery();
 
-  if (isLoading) return <Typography>Loading...</Typography>;
-  if (isError) return <Typography>Error</Typography>;
+  if (isLoading) return <CenteredLoading />;
 
-  return data.map((cfg) => (
+  if (isError)
+    return (
+      <Error
+        message="An error occured loading your configurations. Please try again
+      later."
+      />
+    );
+
+  return data.map((cfg, i) => (
     <Fragment key={cfg.id}>
-      <Divider />
+      {i != 0 && <Divider />}
       <Box sx={{ p: 2 }}>
         <Link
           component={NextLink}
@@ -63,12 +92,18 @@ function Configurations() {
 function Themes() {
   const { data, isError, isLoading } = api.theme.getAll.useQuery();
 
-  if (isLoading) return <Typography>Loading...</Typography>;
-  if (isError) return <Typography>Error</Typography>;
+  if (isLoading) return <CenteredLoading />;
+  if (isError)
+    return (
+      <Error
+        message="An error occured loading your themes. Please try again
+  later."
+      />
+    );
 
-  return data.map((theme) => (
+  return data.map((theme, i) => (
     <Fragment key={theme.id}>
-      <Divider />
+      {i != 0 && <Divider />}
       <Box sx={{ p: 2 }}>
         <Link
           component={NextLink}
@@ -106,6 +141,7 @@ function Dashboard() {
               <Typography variant="h5" sx={{ py: 1.5, p: 2 }}>
                 Configurations
               </Typography>
+              <Divider />
               <Configurations />
               <Divider />
               <Box sx={{ display: "flex", justifyContent: "center" }}>
@@ -122,6 +158,7 @@ function Dashboard() {
               <Typography variant="h5" sx={{ py: 1.5, p: 2 }}>
                 Themes
               </Typography>
+              <Divider />
               <Themes />
               <Divider />
               <Box sx={{ display: "flex", justifyContent: "center" }}>
