@@ -1,21 +1,36 @@
-import { Button, Select, TextField, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  Grid,
+  Paper,
+  TextField,
+  Typography,
+} from "@mui/material";
+import Head from "next/head";
+import { useRouter } from "next/router";
 import { useRef } from "react";
+import { getDashboardLayout } from "~/components/DashboardLayout";
+import SelectTheme from "~/components/SelectTheme";
 import { api } from "~/utils/api";
 
-export default function NewConfiguration() {
-  const {
-    data: themes,
-    isError: isThemesError,
-    isLoading: isThemesLoading,
-  } = api.theme.getAll.useQuery();
+function NewConfiguration() {
+  const router = useRouter();
+
   const nameRef = useRef<HTMLInputElement>(null);
   const themeRef = useRef<HTMLInputElement>(null);
 
-  const { mutate, isLoading } = api.configuration.create.useMutation();
+  const {
+    mutate,
+    isLoading: isLoading,
+    isError,
+  } = api.configuration.create.useMutation({
+    onSuccess: async (newCfg) => {
+      await router.push(`/dashboard/configuration/${newCfg.id}`);
+    },
+  });
 
   const handleSubmit = () => {
-    console.log(nameRef.current);
-    console.log(themeRef.current);
     if (nameRef.current?.value && themeRef.current?.value) {
       mutate({
         name: nameRef.current.value,
@@ -25,28 +40,52 @@ export default function NewConfiguration() {
   };
 
   return (
-    <div>
-      <Typography variant="h4">New Configuration</Typography>
-      <TextField
-        required
-        type="text"
-        label="Configuration name"
-        inputRef={nameRef}
-      ></TextField>
-      <br />
-      {themes != undefined && (
-        <Select inputRef={themeRef} defaultValue={themes[0]?.id}>
-          {themes?.map((theme) => (
-            <option key={theme.id} value={theme.id}>
-              {theme.name}
-            </option>
-          ))}
-        </Select>
-      )}
-      <br />
-      <Button onClick={handleSubmit} disabled={isLoading}>
-        Create new configuration
-      </Button>
-    </div>
+    <>
+      <Head>
+        <title>New configuration</title>
+      </Head>
+      <Typography variant="h4" sx={{ mb: 1 }}>
+        New Configuration
+      </Typography>
+      <Paper sx={{ p: 2 }}>
+        <Grid container>
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6">Name</Typography>
+            <TextField
+              required
+              type="text"
+              label="Configuration name"
+              inputRef={nameRef}
+            ></TextField>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h6" sx={{ mt: 1 }}>
+              Base theme
+            </Typography>
+            <SelectTheme inputRef={themeRef} sx={{ minWidth: 210 }} />
+          </Grid>
+        </Grid>
+
+        {isError && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            Error. Failed to create new configuration.
+          </Alert>
+        )}
+
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+          <Button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            variant="contained"
+          >
+            Create new configuration
+          </Button>
+        </Box>
+      </Paper>
+    </>
   );
 }
+
+NewConfiguration.getLayout = getDashboardLayout;
+
+export default NewConfiguration;
