@@ -105,6 +105,17 @@ export const configurationRouter = createTRPCRouter({
         },
       });
     }),
+  delete: privateProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      await checkOwnership(ctx, input);
+
+      return ctx.prisma.configuration.delete({
+        where: {
+          id: input,
+        },
+      });
+    }),
 });
 
 async function checkOwnership(ctx: TRPCContext, configurationId: string) {

@@ -8,6 +8,9 @@ import {
   Alert,
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogTitle,
   Divider,
   Link,
   Paper,
@@ -24,6 +27,7 @@ import NextLink from "next/link";
 import SelectTheme from "~/components/SelectTheme";
 import ErrorOutline from "@mui/icons-material/ErrorOutline";
 import { CenteredLoading } from "~/components/Loading";
+import { useRouter } from "next/router";
 
 function useEditableField<T>(
   mutate: (value: T) => void,
@@ -176,6 +180,62 @@ function BaseThemeField(props: {
   );
 }
 
+function DeleteButton(props: {
+  configuration: RouterOutput["configuration"]["getById"];
+}) {
+  const { configuration } = props;
+
+  const router = useRouter();
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleClose = () => setDialogOpen(false);
+
+  const handleDelete = () => {
+    mutate(configuration.id);
+  };
+
+  const { mutate, isLoading, isError } = api.configuration.delete.useMutation({
+    onSuccess: async () => {
+      await router.push("/dashboard");
+    },
+  });
+
+  return (
+    <>
+      <Button
+        color="error"
+        variant="outlined"
+        onClick={() => setDialogOpen(true)}
+      >
+        Delete this configuration
+      </Button>
+      <Dialog onClose={handleClose} open={dialogOpen}>
+        <DialogTitle>Delete configuration?</DialogTitle>
+        <Divider />
+        <Box sx={{ p: 2 }}>
+          <Typography>
+            Are you sure you want to delete the configuration{" "}
+            <strong>{configuration.name}</strong> and all of its rules? This
+            action cannot be undone.
+          </Typography>
+          {isError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              Error. Failed to delete configuration.
+            </Alert>
+          )}
+        </Box>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button color="error" onClick={handleDelete} disabled={isLoading}>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+}
+
 interface PageProps {
   configurationId: string;
 }
@@ -217,10 +277,14 @@ const ConfigurationPage: NextPageWithLayout<
         <Box sx={{ p: 2 }}>
           <NameField configuration={data}></NameField>
         </Box>
-        <Divider></Divider>
+        <Divider />
         <Box sx={{ p: 2 }}>
           <Typography variant="h6">Base theme</Typography>
           <BaseThemeField configuration={data}></BaseThemeField>
+        </Box>
+        <Divider />
+        <Box sx={{ p: 2 }}>
+          <DeleteButton configuration={data} />
         </Box>
       </Paper>
     </>
