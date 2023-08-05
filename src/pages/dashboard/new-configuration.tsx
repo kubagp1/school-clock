@@ -1,4 +1,12 @@
-import { Box, Button, Grid, Paper, TextField, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  Grid,
+  Paper,
+  TextField,
+  Typography,
+} from "@mui/material";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useRef } from "react";
@@ -12,12 +20,15 @@ function NewConfiguration() {
   const nameRef = useRef<HTMLInputElement>(null);
   const themeRef = useRef<HTMLInputElement>(null);
 
-  const { mutate, isLoading: isMutationLoading } =
-    api.configuration.create.useMutation({
-      onSuccess: async (newCfg) => {
-        await router.push(`/dashboard/configuration/${newCfg.id}`);
-      },
-    });
+  const {
+    mutate,
+    isLoading: isLoading,
+    isError,
+  } = api.configuration.create.useMutation({
+    onSuccess: async (newCfg) => {
+      await router.push(`/dashboard/configuration/${newCfg.id}`);
+    },
+  });
 
   const handleSubmit = () => {
     if (nameRef.current?.value && themeRef.current?.value) {
@@ -55,10 +66,16 @@ function NewConfiguration() {
           </Grid>
         </Grid>
 
+        {isError && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            Error. Failed to create new configuration.
+          </Alert>
+        )}
+
         <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
           <Button
             onClick={handleSubmit}
-            disabled={isMutationLoading}
+            disabled={isLoading}
             variant="contained"
           >
             Create new configuration
