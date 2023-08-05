@@ -1,27 +1,13 @@
-import {
-  Box,
-  Button,
-  Grid,
-  MenuItem,
-  Paper,
-  Select,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Grid, Paper, TextField, Typography } from "@mui/material";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useRef } from "react";
 import { getDashboardLayout } from "~/components/DashboardLayout";
+import SelectTheme from "~/components/SelectTheme";
 import { api } from "~/utils/api";
 
 function NewConfiguration() {
   const router = useRouter();
-
-  const {
-    data: themes,
-    isError: isThemesError,
-    isLoading: isThemesLoading,
-  } = api.theme.getAll.useQuery();
 
   const nameRef = useRef<HTMLInputElement>(null);
   const themeRef = useRef<HTMLInputElement>(null);
@@ -65,19 +51,7 @@ function NewConfiguration() {
             <Typography variant="h6" sx={{ mt: 1 }}>
               Base theme
             </Typography>
-            {themes != undefined && (
-              <Select
-                inputRef={themeRef}
-                defaultValue={themes[0]?.id}
-                sx={{ minWidth: 210 }}
-              >
-                {themes.map((theme) => (
-                  <MenuItem key={theme.id} value={theme.id}>
-                    {theme.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            )}
+            <SelectTheme inputRef={themeRef} sx={{ minWidth: 210 }} />
           </Grid>
         </Grid>
 
