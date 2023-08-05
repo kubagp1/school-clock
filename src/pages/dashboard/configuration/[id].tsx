@@ -238,6 +238,8 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (
 
   if (typeof context.params?.id !== "string") throw new Error("Invalid id");
 
+  if (context.params.id === "new") throw new Error("Not implemented");
+
   await helpers.configuration.getById.prefetch(context.params.id);
 
   return {
