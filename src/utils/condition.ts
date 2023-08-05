@@ -1,3 +1,0 @@
-type Condition = {
-  todo: string;
-};
