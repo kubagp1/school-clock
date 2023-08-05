@@ -234,11 +234,11 @@ export default ConfigurationPage;
 export const getServerSideProps: GetServerSideProps<PageProps> = async (
   context
 ) => {
+  if (context.params!.id === "new") throw new Error("Not implemented");
+
   const helpers = createSSRHelpers(context.req);
 
   if (typeof context.params?.id !== "string") throw new Error("Invalid id");
-
-  if (context.params.id === "new") throw new Error("Not implemented");
 
   await helpers.configuration.getById.prefetch(context.params.id);
 
