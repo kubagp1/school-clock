@@ -219,7 +219,7 @@ const ConfigurationPage: NextPageWithLayout<
         </Box>
         <Divider></Divider>
         <Box sx={{ p: 2 }}>
-          <Typography variant="h5">Base theme</Typography>
+          <Typography variant="h6">Base theme</Typography>
           <BaseThemeField configuration={data}></BaseThemeField>
         </Box>
       </Paper>
