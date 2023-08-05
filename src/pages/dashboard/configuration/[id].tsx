@@ -22,8 +22,8 @@ import { type RefObject, useRef, useState } from "react";
 import { type RouterOutput } from "~/server/api/root";
 import NextLink from "next/link";
 import SelectTheme from "~/components/SelectTheme";
-// import { ErrorOutline } from "@mui/icons-material";
-// import { CenteredLoading } from "~/components/Loading";
+import ErrorOutline from "@mui/icons-material/ErrorOutline";
+import { CenteredLoading } from "~/components/Loading";
 
 function useEditableField<T>(
   mutate: (value: T) => void,
@@ -187,7 +187,7 @@ const ConfigurationPage: NextPageWithLayout<
     pageProps.configurationId
   );
 
-  if (isLoading) return /*<CenteredLoading />*/ null;
+  if (isLoading) return <CenteredLoading />;
   if (isError || data === null)
     return (
       <Box
@@ -199,7 +199,7 @@ const ConfigurationPage: NextPageWithLayout<
           mt: 4,
         }}
       >
-        {/* <ErrorOutline fontSize="large" /> */}
+        <ErrorOutline fontSize="large" />
         <Typography variant="h5">Error</Typography>
         <Typography>Failed to load configuration</Typography>
         <Link component={NextLink} href="/dashboard">
@@ -234,24 +234,16 @@ export default ConfigurationPage;
 export const getServerSideProps: GetServerSideProps<PageProps> = async (
   context
 ) => {
-  // const helpers = createSSRHelpers(context.req);
+  const helpers = createSSRHelpers(context.req);
 
-  // if (typeof context.params?.id !== "string") throw new Error("Invalid id");
+  if (typeof context.params?.id !== "string") throw new Error("Invalid id");
 
-  // await helpers.configuration.getById.prefetch(context.params.id);
-
-  // return {
-  //   props: {
-  //     trpcState: helpers.dehydrate(),
-  //     configurationId: context.params.id,
-  //   },
-  // };
-
-  await Promise.resolve();
+  await helpers.configuration.getById.prefetch(context.params.id);
 
   return {
     props: {
-      configurationId: "1",
+      trpcState: helpers.dehydrate(),
+      configurationId: context.params.id,
     },
   };
 };
