@@ -6,7 +6,7 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { RequestLike } from "@clerk/nextjs/dist/types/server/types";
+import { type RequestLike } from "@clerk/nextjs/dist/types/server/types";
 import { getAuth } from "@clerk/nextjs/server";
 import { TRPCError, initTRPC } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
@@ -22,7 +22,9 @@ import { prisma } from "~/server/db";
  * These allow you to access things when processing a request, like the database, the session, etc.
  */
 
-type CreateContextOptions = Record<string, never>;
+type CreateContextOptions = {
+  req: RequestLike;
+};
 
 /**
  * This helper generates the "internals" for a tRPC context. If you need to use it, you can export
@@ -34,7 +36,9 @@ type CreateContextOptions = Record<string, never>;
  *
  * @see https://create.t3.gg/en/usage/trpc#-serverapitrpcts
  */
-export const createInnerTRPCContext = (req: RequestLike) => {
+export const createInnerTRPCContext = (opts: CreateContextOptions) => {
+  const { req } = opts;
+
   return {
     prisma,
     auth: getAuth(req),
@@ -48,7 +52,7 @@ export const createInnerTRPCContext = (req: RequestLike) => {
  * @see https://trpc.io/docs/context
  */
 export const createTRPCContext = (opts: CreateNextContextOptions) =>
-  createInnerTRPCContext(opts.req);
+  createInnerTRPCContext(opts);
 
 export type TRPCContext = ReturnType<typeof createTRPCContext>;
 

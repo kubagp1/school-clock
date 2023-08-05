@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
-  TRPCContext,
+  type TRPCContext,
   createTRPCRouter,
   privateProcedure,
 } from "~/server/api/trpc";

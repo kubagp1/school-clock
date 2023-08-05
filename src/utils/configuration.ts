@@ -1,6 +1,6 @@
-import { Instance } from "./instance";
-import { Rule } from "./rule";
-import { Theme } from "./theme";
+import { type Instance } from "./instance";
+import { type Rule } from "./rule";
+import { type Theme } from "./theme";
 
 export type Configuration = {
   id: string;

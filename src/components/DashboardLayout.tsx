@@ -7,7 +7,7 @@ import {
   Container,
   Link,
 } from "@mui/material";
-import { ReactElement } from "react";
+import { type ReactElement } from "react";
 import NextLink from "next/link";
 
 const DashboardLayout = ({ children }: { children: ReactElement }) => {

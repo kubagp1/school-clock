@@ -1,4 +1,7 @@
-import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import {
+  type GetServerSideProps,
+  type InferGetServerSidePropsType,
+} from "next";
 
 import { api } from "~/utils/api";
 import {
@@ -14,9 +17,9 @@ import {
 import { createSSRHelpers } from "~/utils/ssrHelpers";
 import Head from "next/head";
 import { getDashboardLayout } from "~/components/DashboardLayout";
-import { NextPageWithLayout } from "~/pages/_app";
-import { RefObject, useRef, useState } from "react";
-import { RouterOutput } from "~/server/api/root";
+import { type NextPageWithLayout } from "~/pages/_app";
+import { type RefObject, useRef, useState } from "react";
+import { type RouterOutput } from "~/server/api/root";
 import NextLink from "next/link";
 import SelectTheme from "~/components/SelectTheme";
 import { ErrorOutline } from "@mui/icons-material";
@@ -67,8 +70,8 @@ function NameField(props: {
   const { mutate, isLoading, isError, reset } =
     api.configuration.changeName.useMutation({
       onSuccess: () => {
-        utils.configuration.getAll.invalidate();
-        utils.configuration.getById.invalidate(configuration.id);
+        void utils.configuration.getAll.invalidate();
+        void utils.configuration.getById.invalidate(configuration.id);
         onSuccess();
       },
     });
@@ -120,7 +123,7 @@ function BaseThemeField(props: {
   const { mutate, isLoading, isError, reset } =
     api.configuration.changeBaseTheme.useMutation({
       onSuccess: () => {
-        utils.configuration.getById.invalidate(configuration.id);
+        void utils.configuration.getById.invalidate(configuration.id);
         onSuccess();
       },
     });
@@ -231,7 +234,7 @@ export default ConfigurationPage;
 export const getServerSideProps: GetServerSideProps<PageProps> = async (
   context
 ) => {
-  const helpers = await createSSRHelpers(context.req);
+  const helpers = createSSRHelpers(context.req);
 
   if (typeof context.params?.id !== "string") throw new Error("Invalid id");
 

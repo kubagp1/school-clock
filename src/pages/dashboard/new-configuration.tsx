@@ -28,8 +28,8 @@ function NewConfiguration() {
 
   const { mutate, isLoading: isMutationLoading } =
     api.configuration.create.useMutation({
-      onSuccess: (newCfg) => {
-        router.push(`/dashboard/configuration/${newCfg.id}`);
+      onSuccess: async (newCfg) => {
+        await router.push(`/dashboard/configuration/${newCfg.id}`);
       },
     });
 

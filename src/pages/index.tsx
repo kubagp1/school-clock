@@ -1,4 +1,3 @@
-import { api } from "~/utils/api";
 import { SignInButton } from "@clerk/clerk-react";
 import { SignOutButton, useUser } from "@clerk/nextjs";
 import Link from "next/link";
