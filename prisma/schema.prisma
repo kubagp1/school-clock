@@ -24,9 +24,14 @@ model Configuration {
 }
 
 model Theme {
-    id             String          @id @default(cuid())
-    name           String
-    createdById    String
+    id          String @id @default(cuid())
+    name        String
+    createdById String
+
+    hideClock  Boolean?
+    clockColor String?
+    clockSize  Int?
+
     configurations Configuration[]
     rules          Rule[]
 
