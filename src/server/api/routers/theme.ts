@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { type Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
@@ -110,15 +110,9 @@ export async function checkThemeOwnership(ctx: TRPCContext, themeId: string) {
 
 // INTEGRITY CHECKS
 
-type ThemeData = Omit<
+type ThemeData = StrictOmit<
   Required<Prisma.ThemeCreateInput>,
-  | "id"
-  | "name"
-  | "createdById"
-  | "themes"
-  | "configurations"
-  | "rules"
-  | "_count"
+  "id" | "name" | "createdById" | "configurations" | "rules"
 >;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

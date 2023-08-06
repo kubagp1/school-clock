@@ -21,6 +21,7 @@ model Configuration {
     rules       Rule[]
 
     @@index([createdById])
+    @@index([baseThemeId])
 }
 
 model Theme {
@@ -58,4 +59,5 @@ model Rule {
     themeId         String
 
     @@index([configurationId])
+    @@index([themeId])
 }
