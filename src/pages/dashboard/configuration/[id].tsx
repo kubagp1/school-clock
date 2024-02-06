@@ -29,7 +29,7 @@ import ErrorOutline from "@mui/icons-material/ErrorOutline";
 import { CenteredLoading } from "~/components/Loading";
 import { useRouter } from "next/router";
 
-function useEditableField<T>(
+export function useEditableField<T>(
   mutate: (value: T) => void,
   reset: () => void,
   ref: RefObject<HTMLElement & { value: T }>

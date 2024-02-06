@@ -1,4 +1,4 @@
-import { type Prisma } from "@prisma/client";
+import { type Prisma, type Theme } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
@@ -16,14 +16,22 @@ const themeDataSchema = z.object({
 });
 
 export const themeRouter = createTRPCRouter({
-  getAll: privateProcedure.query(({ ctx }) => {
-    return ctx.prisma.theme.findMany({
+  getAll: privateProcedure.query(async ({ ctx }) => {
+    const results = await ctx.prisma.theme.findMany({
       where: {
         createdById: {
           equals: ctx.auth.userId,
         },
       },
     });
+
+    // count of non-null values in data fields in theme
+    return results.map((theme) => ({
+      ...theme,
+      enabledFieldsCount: Object.values(onlyData(theme)).filter(
+        (v) => v !== null
+      ).length,
+    }));
   }),
   getById: privateProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const theme = await ctx.prisma.theme.findUnique({
@@ -92,6 +100,17 @@ export const themeRouter = createTRPCRouter({
         data: input.data,
       });
     }),
+  delete: privateProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      await checkThemeOwnership(ctx, input);
+
+      await ctx.prisma.theme.delete({
+        where: {
+          id: input,
+        },
+      });
+    }),
 });
 
 export async function checkThemeOwnership(ctx: TRPCContext, themeId: string) {
@@ -108,11 +127,18 @@ export async function checkThemeOwnership(ctx: TRPCContext, themeId: string) {
   }
 }
 
+const nonDataFields = ["id", "name", "createdById"] as const;
+
+const onlyData = (theme: Theme) => {
+  const { id, name, createdById, ...data } = theme;
+  return data;
+};
+
 // INTEGRITY CHECKS
 
-type ThemeData = StrictOmit<
-  Required<Prisma.ThemeCreateInput>,
-  "id" | "name" | "createdById" | "configurations" | "rules"
+export type ThemeData = StrictOmit<
+  Required<Theme>,
+  (typeof nonDataFields)[number]
 >;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
