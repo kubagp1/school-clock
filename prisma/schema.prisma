@@ -42,9 +42,10 @@ model Theme {
 model Instance {
     id              String        @id @default(cuid())
     name            String
-    tags            String
+    tags            String        @default("")
     configuration   Configuration @relation(fields: [configurationId], references: [id])
     configurationId String
+    secret          String        @unique @default(cuid())
 
     @@index([configurationId])
 }
