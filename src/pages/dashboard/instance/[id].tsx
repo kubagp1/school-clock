@@ -96,7 +96,7 @@ function DeleteButton(props: {
 
   const { mutate, isLoading, isError } = api.instance.delete.useMutation({
     onSuccess: async () => {
-      await router.push("/dashboard");
+      await router.push(`/dashboard/configuration/${instance.configurationId}`);
     },
   });
 
@@ -115,8 +115,7 @@ function DeleteButton(props: {
         <Box sx={{ p: 2 }}>
           <Typography>
             Are you sure you want to delete the instance{" "}
-            <strong>{instance.name}</strong> and all of its rules? This action
-            cannot be undone.
+            <strong>{instance.name}</strong>? This action cannot be undone.
           </Typography>
           {isError && (
             <Alert severity="error" sx={{ mt: 2 }}>
