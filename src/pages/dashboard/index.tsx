@@ -16,7 +16,6 @@ import { getDashboardLayout } from "~/components/DashboardLayout";
 import Head from "next/head";
 import { CenteredLoading } from "~/components/Loading";
 import { ErrorOutline } from "@mui/icons-material";
-import { ThemeData, themeDataSchema } from "~/server/api/routers/theme";
 
 function Error(props: { message: string }) {
   return (
