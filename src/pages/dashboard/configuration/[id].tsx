@@ -236,6 +236,74 @@ function DeleteButton(props: {
   );
 }
 
+const InstancesSection = (props: {
+  configuration: RouterOutput["configuration"]["getById"];
+}) => {
+  const { configuration } = props;
+  const utils = api.useContext();
+  const router = useRouter();
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  const handleClose = () => setDialogOpen(false);
+
+  const { mutate, isLoading, isError } = api.instance.create.useMutation({
+    onSuccess: (instance) => {
+      void utils.configuration.getById.invalidate(configuration.id);
+      void router.push(`/dashboard/instance/${instance.id}`);
+    },
+  });
+
+  const createInstance = () => {
+    if (nameRef.current?.value) {
+      mutate({
+        name: nameRef.current.value,
+        configurationId: configuration.id,
+      });
+    }
+  };
+
+  const openDialog = () => setDialogOpen(true);
+
+  return (
+    <>
+      <Dialog open={dialogOpen} onClose={handleClose}>
+        <DialogTitle>Create a new instance</DialogTitle>
+        <Divider />
+        <Box sx={{ p: 2 }}>
+          <TextField
+            label="Name"
+            variant="outlined"
+            inputRef={nameRef}
+          ></TextField>
+        </Box>
+        <DialogActions>
+          <Button onClick={createInstance}>Create</Button>
+          <Button color="error">Cancel</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Typography variant="h6">Instances</Typography>
+          <Button onClick={openDialog}>Create new instance</Button>
+        </Box>
+        {configuration.instances.map((instance) => (
+          <div key={instance.id}>
+            <Link
+              component={NextLink}
+              href={`/dashboard/instance/${instance.id}`}
+            >
+              {instance.name}
+            </Link>
+          </div>
+        ))}
+      </Box>
+    </>
+  );
+};
+
 interface PageProps {
   configurationId: string;
 }
@@ -282,6 +350,8 @@ const ConfigurationPage: NextPageWithLayout<
           <Typography variant="h6">Base theme</Typography>
           <BaseThemeField configuration={data}></BaseThemeField>
         </Box>
+        <Divider />
+        <InstancesSection configuration={data} />
         <Divider />
         <Box sx={{ p: 2 }}>
           <DeleteButton configuration={data} />
