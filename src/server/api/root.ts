@@ -3,6 +3,7 @@ import { configurationRouter } from "./routers/configuration";
 import { themeRouter } from "./routers/theme";
 import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
 import { instanceRouter } from "./routers/instance";
+import { instanceSecretRequestRouter } from "./routers/instanceSecretRequest";
 
 /**
  * This is the primary router for your server.
@@ -13,6 +14,7 @@ export const appRouter = createTRPCRouter({
   configuration: configurationRouter,
   theme: themeRouter,
   instance: instanceRouter,
+  instanceSecretRequest: instanceSecretRequestRouter,
 });
 
 // export type definition of API
