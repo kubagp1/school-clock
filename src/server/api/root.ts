@@ -1,6 +1,6 @@
 import { createTRPCRouter } from "~/server/api/trpc";
 import { configurationRouter } from "./routers/configuration";
-import { themeRouter } from "./routers/themeRouter";
+import { themeRouter } from "./routers/theme";
 import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
 
 /**

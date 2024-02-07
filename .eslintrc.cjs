@@ -29,6 +29,15 @@ const config = {
       },
     ],
     "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        types: {
+          Omit: "Use StrictOmit instead",
+        },
+        extendDefaults: true,
+      },
+    ],
   },
 };
 

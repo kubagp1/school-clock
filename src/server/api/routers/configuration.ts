@@ -5,6 +5,7 @@ import {
   createTRPCRouter,
   privateProcedure,
 } from "~/server/api/trpc";
+import { checkThemeOwnership } from "./theme";
 
 const configurationNameSchema = z.string().trim().min(1);
 
@@ -50,7 +51,9 @@ export const configurationRouter = createTRPCRouter({
         baseThemeId: z.string(),
       })
     )
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
+      await checkThemeOwnership(ctx, input.baseThemeId);
+
       return ctx.prisma.configuration.create({
         data: {
           name: input.name,
@@ -71,7 +74,7 @@ export const configurationRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      await checkOwnership(ctx, input.id);
+      await checkConfigurationOwnership(ctx, input.id);
 
       return ctx.prisma.configuration.update({
         where: {
@@ -90,7 +93,8 @@ export const configurationRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      await checkOwnership(ctx, input.id);
+      await checkConfigurationOwnership(ctx, input.id);
+      await checkThemeOwnership(ctx, input.baseThemeId);
 
       return ctx.prisma.configuration.update({
         where: {
@@ -108,7 +112,7 @@ export const configurationRouter = createTRPCRouter({
   delete: privateProcedure
     .input(z.string())
     .mutation(async ({ ctx, input }) => {
-      await checkOwnership(ctx, input);
+      await checkConfigurationOwnership(ctx, input);
 
       return ctx.prisma.configuration.delete({
         where: {
@@ -118,7 +122,10 @@ export const configurationRouter = createTRPCRouter({
     }),
 });
 
-async function checkOwnership(ctx: TRPCContext, configurationId: string) {
+async function checkConfigurationOwnership(
+  ctx: TRPCContext,
+  configurationId: string
+) {
   const configuration = await ctx.prisma.configuration.findUnique({
     where: {
       id: configurationId,

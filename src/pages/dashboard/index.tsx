@@ -112,6 +112,17 @@ function Themes() {
         >
           <Typography variant="h6">{theme.name}</Typography>
         </Link>
+        <Box sx={{ mb: 1 }}></Box>
+        <table style={{ borderSpacing: "0px", minWidth: "50%" }}>
+          <tbody>
+            <tr>
+              <td>
+                <b>Enabled fields</b>
+              </td>
+              <td>{theme.enabledFieldsCount}</td>
+            </tr>
+          </tbody>
+        </table>
       </Box>
     </Fragment>
   ));
