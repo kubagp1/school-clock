@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { randomUUID } from "crypto";
 import { z } from "zod";
 import {
   type TRPCContext,
@@ -8,9 +9,9 @@ import {
 } from "~/server/api/trpc";
 
 export const instanceSecretRequestRouter = createTRPCRouter({
-  create: publicProcedure.mutation(({ ctx }) => {
+  create: publicProcedure.mutation(async ({ ctx }) => {
     // cleanup old requests
-    void ctx.prisma.instanceSecretRequest.deleteMany({
+    await ctx.prisma.instanceSecretRequest.deleteMany({
       where: {
         createdAt: {
           lte: new Date(Date.now() - 1000 * 60 * 60),
@@ -29,44 +30,50 @@ export const instanceSecretRequestRouter = createTRPCRouter({
   getSecret: publicProcedure
     .input(
       z.object({
-        requestCode: z.string(),
-        claimToken: z.string(),
+        requestCode: z.string().min(1),
+        claimToken: z.string().min(1),
       })
     )
     .query(async ({ ctx, input }) => {
-      const secretRequest = await ctx.prisma.instanceSecretRequest.delete({
+      const secretRequest = await ctx.prisma.instanceSecretRequest.findUnique({
         where: {
           requestCode: input.requestCode,
           claimToken: input.claimToken,
-          instanceSecret: {
-            not: null,
-          },
         },
       });
 
-      if (secretRequest === null) {
+      if (!secretRequest) {
         throw new TRPCError({
           code: "NOT_FOUND",
         });
       }
 
-      if (secretRequest.instanceSecret === null) {
-        return null;
-      }
+      if (secretRequest.instanceSecret === null) return null;
+
+      await ctx.prisma.instanceSecretRequest.delete({
+        where: {
+          requestCode: input.requestCode,
+          claimToken: input.claimToken,
+        },
+      });
 
       return secretRequest.instanceSecret;
     }),
   setSecret: privateProcedure
     .input(
       z.object({
-        requestCode: z.string(),
-        instanceSecret: z.string(),
+        requestCode: z.string().min(1),
+        instanceId: z.string().min(1),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      input.requestCode = Array.from(input.requestCode)
+        .filter((c) => "0123456789".includes(c))
+        .join("");
+
       const validInstancesCount = await ctx.prisma.instance.count({
         where: {
-          secret: input.instanceSecret,
+          id: input.instanceId,
           configuration: {
             createdById: ctx.auth.userId,
           },
@@ -93,12 +100,22 @@ export const instanceSecretRequestRouter = createTRPCRouter({
         });
       }
 
+      const updatedInstance = await ctx.prisma.instance.update({
+        where: {
+          id: input.instanceId,
+        },
+        data: {
+          secret: randomUUID(),
+          lastSeen: null,
+        },
+      });
+
       await ctx.prisma.instanceSecretRequest.update({
         where: {
           requestCode: input.requestCode,
         },
         data: {
-          instanceSecret: input.instanceSecret,
+          instanceSecret: updatedInstance.secret,
         },
       });
     }),
