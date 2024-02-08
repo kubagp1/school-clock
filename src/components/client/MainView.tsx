@@ -23,7 +23,7 @@ export function MainView() {
     isError,
   } = api.instance.getBySecret.useQuery(instanceSecret ?? "", {
     enabled: instanceSecret !== null,
-    refetchInterval: 1000,
+    refetchInterval: 1000 * 60,
   });
 
   if (instanceSecret === null) {
