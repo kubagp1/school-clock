@@ -15,7 +15,7 @@ import NextLink from "next/link";
 import { getDashboardLayout } from "~/components/DashboardLayout";
 import Head from "next/head";
 import { CenteredLoading } from "~/components/Loading";
-import { ErrorOutline } from "@mui/icons-material";
+import ErrorOutline from "@mui/icons-material/ErrorOutline";
 
 function Error(props: { message: string }) {
   return (
