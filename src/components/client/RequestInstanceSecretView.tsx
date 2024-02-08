@@ -25,7 +25,7 @@ export function RequestInstanceSecretView() {
     },
     {
       enabled: secretRequest !== undefined && instanceSecret === null,
-      refetchInterval: 1000 * 60,
+      refetchInterval: 1000,
       onSuccess: (data) => {
         if (data === null) return;
         setInstanceSecret(data);
