@@ -23,38 +23,36 @@ import { api } from "~/utils/api";
 import { createSSRHelpers } from "~/utils/ssrHelpers";
 import NextLink from "next/link";
 import { useRef, useState } from "react";
-import { RouterOutput } from "~/server/api/root";
+import { type RouterOutput } from "~/server/api/root";
 import { useEditableField } from "../configuration/[id]";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import ThemeEditor from "~/components/ThemeEditor";
-import { ThemeData } from "~/server/api/routers/theme";
 
-function NameField(props: { theme: RouterOutput["theme"]["getById"] }) {
+function NameField(props: { instance: RouterOutput["instance"]["getById"] }) {
   const utils = api.useContext();
 
-  const { theme } = props;
+  const { instance } = props;
 
   const nameRef = useRef<HTMLInputElement>(null);
 
   const { mutate, isLoading, isError, reset } =
-    api.theme.changeName.useMutation({
+    api.instance.changeName.useMutation({
       onSuccess: () => {
-        void utils.theme.getAll.invalidate();
-        void utils.theme.getById.invalidate(theme.id);
+        void utils.instance.getAll.invalidate();
+        void utils.instance.getById.invalidate(instance.id);
         onSuccess();
       },
     });
 
   const mutateWrapper = (value: string) =>
-    mutate({ id: theme.id, name: value });
+    mutate({ id: instance.id, name: value });
 
   const { isEditing, startEdit, cancelEdit, saveEdit, onSuccess } =
     useEditableField(mutateWrapper, reset, nameRef);
 
   return !isEditing ? (
     <Typography variant="h4">
-      {theme.name} <Button onClick={startEdit}>Edit name</Button>
+      {instance.name} <Button onClick={startEdit}>Edit name</Button>
     </Typography>
   ) : (
     <>
@@ -65,7 +63,7 @@ function NameField(props: { theme: RouterOutput["theme"]["getById"] }) {
       )}
       <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
         <TextField
-          defaultValue={theme.name}
+          defaultValue={instance.name}
           label="Name"
           variant="outlined"
           inputRef={nameRef}
@@ -81,8 +79,10 @@ function NameField(props: { theme: RouterOutput["theme"]["getById"] }) {
   );
 }
 
-function DeleteButton(props: { theme: RouterOutput["theme"]["getById"] }) {
-  const { theme } = props;
+function DeleteButton(props: {
+  instance: RouterOutput["instance"]["getById"];
+}) {
+  const { instance } = props;
 
   const router = useRouter();
 
@@ -91,12 +91,12 @@ function DeleteButton(props: { theme: RouterOutput["theme"]["getById"] }) {
   const handleClose = () => setDialogOpen(false);
 
   const handleDelete = () => {
-    mutate(theme.id);
+    mutate(instance.id);
   };
 
-  const { mutate, isLoading, isError } = api.theme.delete.useMutation({
+  const { mutate, isLoading, isError } = api.instance.delete.useMutation({
     onSuccess: async () => {
-      await router.push("/dashboard");
+      await router.push(`/dashboard/configuration/${instance.configurationId}`);
     },
   });
 
@@ -107,20 +107,19 @@ function DeleteButton(props: { theme: RouterOutput["theme"]["getById"] }) {
         variant="outlined"
         onClick={() => setDialogOpen(true)}
       >
-        Delete this theme
+        Delete this instance
       </Button>
       <Dialog onClose={handleClose} open={dialogOpen}>
-        <DialogTitle>Delete theme?</DialogTitle>
+        <DialogTitle>Delete instance?</DialogTitle>
         <Divider />
         <Box sx={{ p: 2 }}>
           <Typography>
-            Are you sure you want to delete the theme{" "}
-            <strong>{theme.name}</strong> and all of its rules? This action
-            cannot be undone.
+            Are you sure you want to delete the instance{" "}
+            <strong>{instance.name}</strong>? This action cannot be undone.
           </Typography>
           {isError && (
             <Alert severity="error" sx={{ mt: 2 }}>
-              Error. Failed to delete theme.
+              Error. Failed to delete instance.
             </Alert>
           )}
         </Box>
@@ -135,55 +134,66 @@ function DeleteButton(props: { theme: RouterOutput["theme"]["getById"] }) {
   );
 }
 
-const ThemeSection = (props: { theme: ThemeData & { id: string } }) => {
-  const themeRef = useRef<ThemeData>(props.theme);
+const parseTags = (tags: string) => {
+  return tags.split(",").map((tag) => tag.trim());
+};
 
-  const handleChange = (theme: ThemeData) => {
-    themeRef.current = theme;
-  };
+function InstanceSection(props: {
+  instance: RouterOutput["instance"]["getById"];
+}) {
+  const utils = api.useContext();
 
-  const handleSave = () => {
-    if (!themeRef.current) {
-      alert("Failed to save changes");
-      return;
-    }
+  const { instance } = props;
 
+  const requestCodeRef = useRef<HTMLInputElement>(null);
+
+  const { mutate } = api.instanceSecretRequest.setSecret.useMutation();
+
+  const handleSetSecret = () => {
+    if (requestCodeRef.current === null) return;
     mutate({
-      id: props.theme.id,
-      data: themeRef.current,
+      requestCode: requestCodeRef.current.value,
+      instanceId: instance.id,
     });
   };
 
-  const { mutate } = api.theme.changeData.useMutation({
-    onSuccess: () => {
-      alert("Saved changes");
-    },
-    onError: () => {
-      alert("Failed to save changes");
-    },
-  });
+  const handleRefresh = () => {
+    void utils.instance.getById.invalidate(instance.id);
+  };
 
   return (
-    <>
-      <ThemeEditor theme={props.theme} onChange={handleChange}></ThemeEditor>
-      <Box sx={{ display: "flex", justifyContent: "right" }}>
-        <Button variant="contained" sx={{ mt: 2 }} onClick={handleSave}>
-          Save changes
-        </Button>
-      </Box>
-    </>
+    <Box>
+      <Typography variant="h5">Instance</Typography>
+      <Typography>
+        <strong>Id:</strong> {instance.id}
+      </Typography>
+      <Typography>
+        <strong>Tags:</strong>{" "}
+        {parseTags(instance.tags).reduce((acc, tag) => `${acc}, ${tag}`)}
+      </Typography>
+      <Typography>
+        <strong>Secret:</strong> {instance.secret}
+      </Typography>
+      <input type="text" ref={requestCodeRef} />
+      <button onClick={handleSetSecret}>Set secret</button>
+      <Typography>
+        <strong>Last seen:</strong>{" "}
+        {instance.lastSeen?.toLocaleString() ?? "Never"}
+        <button onClick={handleRefresh}>Refresh</button>
+      </Typography>
+    </Box>
   );
-};
-
-interface PageProps {
-  themeId: string;
 }
 
-const ThemePage: NextPageWithLayout<
+interface PageProps {
+  instanceId: string;
+}
+
+const instancePage: NextPageWithLayout<
   InferGetServerSidePropsType<typeof getServerSideProps>
 > = (pageProps) => {
-  const { data, isError, isLoading } = api.theme.getById.useQuery(
-    pageProps.themeId
+  const { data, isError, isLoading } = api.instance.getById.useQuery(
+    pageProps.instanceId
   );
 
   if (isLoading) return <CenteredLoading />;
@@ -200,7 +210,7 @@ const ThemePage: NextPageWithLayout<
       >
         <ErrorOutline fontSize="large" />
         <Typography variant="h5">Error</Typography>
-        <Typography>Failed to load theme</Typography>
+        <Typography>Failed to load instance</Typography>
         <Link component={NextLink} href="/dashboard">
           <Button>Go back to the dashboard</Button>
         </Link>
@@ -210,28 +220,28 @@ const ThemePage: NextPageWithLayout<
   return (
     <>
       <Head>
-        <title>{data.name} | Theme</title>
+        <title>{data.name} | Instance</title>
       </Head>
       <Paper>
         <Box sx={{ p: 2 }}>
-          <NameField theme={data}></NameField>
+          <NameField instance={data}></NameField>
         </Box>
         <Divider />
         <Box sx={{ p: 2 }}>
-          <ThemeSection theme={data} />
+          <InstanceSection instance={data} />
         </Box>
         <Divider />
         <Box sx={{ p: 2 }}>
-          <DeleteButton theme={data} />
+          <DeleteButton instance={data} />
         </Box>
       </Paper>
     </>
   );
 };
 
-ThemePage.getLayout = getDashboardLayout;
+instancePage.getLayout = getDashboardLayout;
 
-export default ThemePage;
+export default instancePage;
 
 export const getServerSideProps: GetServerSideProps<PageProps> = async (
   context
@@ -240,12 +250,12 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (
 
   if (typeof context.params?.id !== "string") throw new Error("Invalid id");
 
-  await helpers.theme.getById.prefetch(context.params.id);
+  await helpers.instance.getById.prefetch(context.params.id);
 
   return {
     props: {
       trpcState: helpers.dehydrate(),
-      themeId: context.params.id,
+      instanceId: context.params.id,
     },
   };
 };

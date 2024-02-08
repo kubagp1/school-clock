@@ -2,62 +2,71 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider     = "mysql"
-    url          = env("DATABASE_URL")
-    relationMode = "prisma"
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 model Configuration {
-    id          String     @id @default(cuid())
-    name        String
-    baseTheme   Theme      @relation(fields: [baseThemeId], references: [id])
-    baseThemeId String
-    createdById String
-    instances   Instance[]
-    rules       Rule[]
+  id          String     @id @default(cuid())
+  name        String
+  baseTheme   Theme      @relation(fields: [baseThemeId], references: [id])
+  baseThemeId String
+  createdById String
+  instances   Instance[]
+  rules       Rule[]
 
-    @@index([createdById])
-    @@index([baseThemeId])
+  @@index([createdById])
+  @@index([baseThemeId])
 }
 
 model Theme {
-    id          String @id @default(cuid())
-    name        String
-    createdById String
+  id          String @id @default(cuid())
+  name        String
+  createdById String
 
-    hideClock  Boolean?
-    clockColor String?
-    clockSize  Int?
+  hideClock  Boolean?
+  clockColor String?
+  clockSize  Int?
 
-    configurations Configuration[]
-    rules          Rule[]
+  configurations Configuration[]
+  rules          Rule[]
 
-    @@index([createdById])
+  @@index([createdById])
 }
 
 model Instance {
-    id              String        @id @default(cuid())
-    name            String
-    tags            String
-    configuration   Configuration @relation(fields: [configurationId], references: [id])
-    configurationId String
+  id              String        @id @default(cuid())
+  name            String
+  tags            String        @default("")
+  configuration   Configuration @relation(fields: [configurationId], references: [id])
+  configurationId String
+  secret          String        @unique @default(uuid())
+  lastSeen        DateTime?
 
-    @@index([configurationId])
+  @@index([configurationId])
+}
+
+model InstanceSecretRequest {
+  requestCode    String   @id @unique
+  claimToken     String   @default(uuid())
+  instanceSecret String?
+  createdAt      DateTime @default(now())
 }
 
 model Rule {
-    id              String        @id @default(cuid())
-    name            String
-    configuration   Configuration @relation(fields: [configurationId], references: [id])
-    configurationId String
-    condition       String
-    theme           Theme         @relation(fields: [themeId], references: [id])
-    themeId         String
+  id              String        @id @default(cuid())
+  name            String
+  configuration   Configuration @relation(fields: [configurationId], references: [id])
+  configurationId String
+  condition       String
+  theme           Theme         @relation(fields: [themeId], references: [id])
+  themeId         String
 
-    @@index([configurationId])
-    @@index([themeId])
+  @@index([configurationId])
+  @@index([themeId])
 }
