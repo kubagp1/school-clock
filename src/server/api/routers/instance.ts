@@ -42,14 +42,36 @@ export const instanceRouter = createTRPCRouter({
   getBySecret: publicProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {
-      return ctx.prisma.instance.findUnique({
+      const instance = await ctx.prisma.instance.findUnique({
         where: {
           secret: input,
         },
         include: {
-          configuration: true,
+          configuration: {
+            include: {
+              baseTheme: true,
+              rules: true,
+            },
+          },
         },
       });
+
+      if (instance === null) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      await ctx.prisma.instance.update({
+        where: {
+          id: instance.id,
+        },
+        data: {
+          lastSeen: new Date(),
+        },
+      });
+
+      return instance;
     }),
   delete: privateProcedure
     .input(z.string())
