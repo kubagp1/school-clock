@@ -46,6 +46,7 @@ model Instance {
   configuration   Configuration @relation(fields: [configurationId], references: [id])
   configurationId String
   secret          String        @unique @default(uuid())
+  lastSeen        DateTime?
 
   @@index([configurationId])
 }
