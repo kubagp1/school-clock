@@ -24,6 +24,7 @@ export function MainView() {
   } = api.instance.getBySecret.useQuery(instanceSecret ?? "", {
     enabled: instanceSecret !== null,
     refetchInterval: 1000 * 60,
+    refetchIntervalInBackground: true,
   });
 
   if (instanceSecret === null) {
