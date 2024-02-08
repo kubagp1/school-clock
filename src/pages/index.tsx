@@ -14,12 +14,19 @@ export default function Home() {
             <>
               <p>Hello, {user.username}</p>
               <SignOutButton />
+              <br />
+              <br />
               <Link href="/dashboard">Go to dashboard</Link>
+              <br />
+              <Link href="/client">Go to client</Link>
             </>
           ) : (
             <>
               <p>You are not signed in</p>
               <SignInButton />
+              <br />
+              <br />
+              <Link href="/client">Go to client</Link>
             </>
           )}
         </>
