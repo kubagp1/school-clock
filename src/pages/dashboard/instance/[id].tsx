@@ -141,7 +141,25 @@ const parseTags = (tags: string) => {
 function InstanceSection(props: {
   instance: RouterOutput["instance"]["getById"];
 }) {
+  const utils = api.useContext();
+
   const { instance } = props;
+
+  const requestCodeRef = useRef<HTMLInputElement>(null);
+
+  const { mutate } = api.instanceSecretRequest.setSecret.useMutation();
+
+  const handleSetSecret = () => {
+    if (requestCodeRef.current === null) return;
+    mutate({
+      requestCode: requestCodeRef.current.value,
+      instanceId: instance.id,
+    });
+  };
+
+  const handleRefresh = () => {
+    void utils.instance.getById.invalidate(instance.id);
+  };
 
   return (
     <Box>
@@ -155,6 +173,13 @@ function InstanceSection(props: {
       </Typography>
       <Typography>
         <strong>Secret:</strong> {instance.secret}
+      </Typography>
+      <input type="text" ref={requestCodeRef} />
+      <button onClick={handleSetSecret}>Set secret</button>
+      <Typography>
+        <strong>Last seen:</strong>{" "}
+        {instance.lastSeen?.toLocaleString() ?? "Never"}
+        <button onClick={handleRefresh}>Refresh</button>
       </Typography>
     </Box>
   );
