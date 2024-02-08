@@ -1,6 +1,6 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect } from "react";
 import { InstanceSecretContext } from "./InstanceSecretProvider";
-import { RouterOutputs, api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 
 import styles from "./MainView.module.css";
 
