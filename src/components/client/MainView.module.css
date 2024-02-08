@@ -1,0 +1,6 @@
+.clock {
+  display: var(--clock-display);
+  font-size: var(--clock-size);
+  color: var(--clock-color);
+  margin: 20px;
+}
