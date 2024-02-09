@@ -1,9 +1,11 @@
 import { createTRPCRouter } from "~/server/api/trpc";
+import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
+
 import { configurationRouter } from "./routers/configuration";
 import { themeRouter } from "./routers/theme";
-import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
 import { instanceRouter } from "./routers/instance";
 import { instanceSecretRequestRouter } from "./routers/instanceSecretRequest";
+import { ruleRouter } from "./routers/rule";
 
 /**
  * This is the primary router for your server.
@@ -15,6 +17,7 @@ export const appRouter = createTRPCRouter({
   theme: themeRouter,
   instance: instanceRouter,
   instanceSecretRequest: instanceSecretRequestRouter,
+  rule: ruleRouter,
 });
 
 // export type definition of API
