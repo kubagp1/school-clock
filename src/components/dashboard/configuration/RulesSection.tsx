@@ -97,11 +97,11 @@ function Rule(props: {
             },
           }}
         >
-          <Grid item xs={0.5}>
+          <Grid item lg={0.5}>
             <DragIndicatorIcon />
           </Grid>
 
-          <Grid item xs={1.3}>
+          <Grid item lg={1.3}>
             <FormControlLabel
               control={<Switch checked={rule.enabled} />}
               label={rule.enabled ? "Enabled" : "Disabled"}
