@@ -28,7 +28,6 @@ export const ruleRouter = createTRPCRouter({
       z.object({
         configurationId: z.string().min(1),
         name: z.string().trim().min(1),
-        condition: conditionSchema,
         themeId: z.string().min(1),
       })
     )
@@ -36,7 +35,6 @@ export const ruleRouter = createTRPCRouter({
       return ctx.prisma.rule.create({
         data: {
           name: input.name,
-          condition: JSON.stringify(input.condition),
           configuration: {
             connect: {
               id: input.configurationId,
@@ -55,11 +53,11 @@ export const ruleRouter = createTRPCRouter({
       z.object({
         id: z.string().min(1),
         name: z.string().trim().min(1),
-        condition: conditionSchema,
+        enabled: z.boolean(),
         themeId: z.string().min(1),
       })
     )
-    .query(({ ctx, input }) => {
+    .mutation(({ ctx, input }) => {
       return ctx.prisma.rule.update({
         where: {
           id: input.id,
@@ -69,7 +67,7 @@ export const ruleRouter = createTRPCRouter({
         },
         data: {
           name: input.name,
-          condition: JSON.stringify(input.condition),
+          enabled: input.enabled,
           theme: {
             connect: {
               id: input.themeId,
