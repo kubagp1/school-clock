@@ -61,11 +61,12 @@ model InstanceSecretRequest {
 model Rule {
   id              String        @id @default(cuid())
   name            String
-  configuration   Configuration @relation(fields: [configurationId], references: [id])
-  configurationId String
-  condition       String
+  condition       Json          @default("[]")
+  enabled         Boolean       @default(true)
   theme           Theme         @relation(fields: [themeId], references: [id])
   themeId         String
+  configuration   Configuration @relation(fields: [configurationId], references: [id])
+  configurationId String
 
   @@index([configurationId])
   @@index([themeId])
