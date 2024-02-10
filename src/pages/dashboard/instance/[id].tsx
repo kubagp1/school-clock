@@ -220,7 +220,7 @@ const instancePage: NextPageWithLayout<
   return (
     <>
       <Head>
-        <title>{data.name} | Instance</title>
+        <title>{`${data.name} | Instance`}</title>
       </Head>
       <Paper>
         <Box sx={{ p: 2 }}>

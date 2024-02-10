@@ -340,7 +340,7 @@ const ConfigurationPage: NextPageWithLayout<
   return (
     <>
       <Head>
-        <title>{data.name} | Configuration</title>
+        <title>{`${data.name} | Configuration`}</title>
       </Head>
       <Paper>
         <Box sx={{ p: 2 }}>

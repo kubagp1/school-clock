@@ -210,7 +210,7 @@ const ThemePage: NextPageWithLayout<
   return (
     <>
       <Head>
-        <title>{data.name} | Theme</title>
+        <title>{`${data.name} | Theme`}</title>
       </Head>
       <Paper>
         <Box sx={{ p: 2 }}>
