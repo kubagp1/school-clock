@@ -24,10 +24,11 @@ import { type NextPageWithLayout } from "~/pages/_app";
 import { type RefObject, useRef, useState } from "react";
 import { type RouterOutput } from "~/server/api/root";
 import NextLink from "next/link";
-import SelectTheme from "~/components/SelectTheme";
+import SelectTheme from "~/components/dashboard/SelectTheme";
 import ErrorOutline from "@mui/icons-material/ErrorOutline";
 import { CenteredLoading } from "~/components/Loading";
 import { useRouter } from "next/router";
+import { RulesSection } from "~/components/dashboard/configuration/RulesSection";
 
 export function useEditableField<T>(
   mutate: (value: T) => void,
@@ -349,6 +350,11 @@ const ConfigurationPage: NextPageWithLayout<
         <Box sx={{ p: 2 }}>
           <Typography variant="h6">Base theme</Typography>
           <BaseThemeField configuration={data}></BaseThemeField>
+        </Box>
+        <Divider />
+        <Box sx={{ p: 2 }}>
+          <Typography variant="h6">Rules</Typography>
+          <RulesSection configuration={data} />
         </Box>
         <Divider />
         <InstancesSection configuration={data} />

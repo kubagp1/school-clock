@@ -11,7 +11,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useRef } from "react";
 import { getDashboardLayout } from "~/components/DashboardLayout";
-import SelectTheme from "~/components/SelectTheme";
+import SelectTheme from "~/components/dashboard/SelectTheme";
 import { api } from "~/utils/api";
 
 function NewConfiguration() {

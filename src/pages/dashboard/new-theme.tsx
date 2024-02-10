@@ -11,7 +11,7 @@ import Head from "next/head";
 import router from "next/router";
 import { useRef } from "react";
 import { getDashboardLayout } from "~/components/DashboardLayout";
-import ThemeEditor from "~/components/ThemeEditor";
+import ThemeEditor from "~/components/dashboard/ThemeEditor";
 import { type ThemeData } from "~/server/api/routers/theme";
 import { api } from "~/utils/api";
 

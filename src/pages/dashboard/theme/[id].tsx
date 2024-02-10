@@ -27,7 +27,7 @@ import { RouterOutput } from "~/server/api/root";
 import { useEditableField } from "../configuration/[id]";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import ThemeEditor from "~/components/ThemeEditor";
+import ThemeEditor from "~/components/dashboard/ThemeEditor";
 import { ThemeData } from "~/server/api/routers/theme";
 
 function NameField(props: { theme: RouterOutput["theme"]["getById"] }) {
