@@ -6,9 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider     = "mysql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma"
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
 model Configuration {
@@ -63,11 +63,13 @@ model Rule {
   name            String
   condition       Json          @default("[]")
   enabled         Boolean       @default(true)
+  index           Int
   theme           Theme         @relation(fields: [themeId], references: [id])
   themeId         String
   configuration   Configuration @relation(fields: [configurationId], references: [id])
   configurationId String
 
+  @@unique([index, configurationId])
   @@index([configurationId])
   @@index([themeId])
 }
