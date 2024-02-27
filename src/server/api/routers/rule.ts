@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "../trpc";
 import { conditionSchema } from "~/utils/rules";
+import { TRPCError } from "@trpc/server";
 
 export const ruleRouter = createTRPCRouter({
   getAll: privateProcedure.input(z.string().min(1)).query(({ ctx, input }) => {
@@ -31,7 +32,35 @@ export const ruleRouter = createTRPCRouter({
         themeId: z.string().min(1),
       })
     )
-    .query(({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
+      const configurationCount = await ctx.prisma.configuration.count({
+        where: {
+          id: input.configurationId,
+          createdById: ctx.auth.userId,
+        },
+      });
+
+      if (configurationCount === 0) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      const largestIndex = await ctx.prisma.rule.findFirst({
+        select: {
+          index: true,
+        },
+        where: {
+          configuration: {
+            id: input.configurationId,
+            createdById: ctx.auth.userId,
+          },
+        },
+        orderBy: {
+          index: "desc",
+        },
+      });
+
       return ctx.prisma.rule.create({
         data: {
           name: input.name,
@@ -45,6 +74,7 @@ export const ruleRouter = createTRPCRouter({
               id: input.themeId,
             },
           },
+          index: largestIndex ? largestIndex.index + 1 : 0,
         },
       });
     }),
