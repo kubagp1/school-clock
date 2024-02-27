@@ -21,20 +21,18 @@ import {
 } from "@mui/material";
 import NextLink from "next/link";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import ErrorOutline from "@mui/icons-material/ErrorOutline";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useEffect, useRef, useState } from "react";
-import { RouterOutput } from "~/server/api/root";
+import type { RouterOutput } from "~/server/api/root";
 import { useEditableField } from "../configuration/[id]";
 import SelectTheme from "~/components/dashboard/SelectTheme";
 import RuleConditionEditor from "~/components/dashboard/RuleConditionEditor";
 import {
-  Condition,
+  type Condition,
   conditionSchema,
   defaultCondition,
 } from "~/utils/conditions";
-import { set } from "zod";
 import RuleConditionTester from "~/components/dashboard/RuleConditionTester";
 
 function NameField(props: {
