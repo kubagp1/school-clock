@@ -282,8 +282,10 @@ const InstancesSection = (props: {
           ></TextField>
         </Box>
         <DialogActions>
+          <Button color="error" onClick={handleClose}>
+            Cancel
+          </Button>
           <Button onClick={createInstance}>Create</Button>
-          <Button color="error">Cancel</Button>
         </DialogActions>
       </Dialog>
 
@@ -319,6 +321,7 @@ const ConfigurationPage: NextPageWithLayout<
   );
 
   const isMutatingRules = useIsMutating(getQueryKey(api.rule.update));
+  const isMutatingRulesOrder = useIsMutating(getQueryKey(api.rule.updateOrder));
 
   if (isLoading) return <CenteredLoading />;
   if (isError || data === null)
@@ -359,7 +362,7 @@ const ConfigurationPage: NextPageWithLayout<
         <Box sx={{ p: 2 }}>
           <Typography variant="h6">
             Rules{" "}
-            {isMutatingRules || isLoading ? (
+            {isMutatingRules || isMutatingRulesOrder ? (
               <Typography color="GrayText" variant="body1" component="span">
                 Saving...
               </Typography>
