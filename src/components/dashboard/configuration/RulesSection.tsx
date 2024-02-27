@@ -1,10 +1,18 @@
 import {
+  Active,
   DndContext,
-  PointerSensor,
+  DragEndEvent,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { SortableContext, useSortable } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import {
@@ -25,26 +33,86 @@ import NextLink from "next/link";
 
 import { type RouterOutput } from "~/server/api/root";
 import { api } from "~/utils/api";
-import { useEffect } from "react";
-
+import { useState } from "react";
 export const RulesSection = (props: {
   configuration: NonNullable<RouterOutput["configuration"]["getById"]>;
 }) => {
+  const utils = api.useContext();
   const { configuration } = props;
 
-  const rules = configuration.rules;
-
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 10,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
       },
     })
   );
 
+  // I have no idea why this is necessary but without it the drag animation is bugged
+  const setDragActive = useState<Active | null>(null)[1];
+
+  const { mutate: mutateOrder, variables } = api.rule.updateOrder.useMutation({
+    onSettled: async () => {
+      // await because we want to keep displaying the optimistic update until the refetch is done
+      return await utils.configuration.invalidate();
+    },
+  });
+
+  const rules = configuration.rules.sort((a, b) => {
+    if (variables === undefined) return a.index - b.index;
+
+    const aOptimisticIndex = variables.find((rule) => rule.id === a.id)?.index;
+    const bOptimisticIndex = variables.find((rule) => rule.id === b.id)?.index;
+
+    if (aOptimisticIndex === undefined || bOptimisticIndex === undefined)
+      return a.index - b.index;
+
+    return aOptimisticIndex - bOptimisticIndex;
+  });
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id === over?.id) {
+      return;
+    }
+
+    const oldIndex = rules.findIndex((rule) => rule.id === active.id);
+    const newIndex = rules.findIndex((rule) => rule.id === over?.id);
+
+    if (oldIndex === -1 || newIndex === -1) {
+      return;
+    }
+
+    const newOrder: { id: string; index: number }[] = arrayMove(
+      rules.map((rule) => rule.id),
+      oldIndex,
+      newIndex
+    ).map((id, index) => ({ id, index }));
+
+    mutateOrder(newOrder);
+
+    setDragActive(null);
+  };
+
   return (
-    <DndContext sensors={sensors}>
-      <SortableContext items={rules.map((rule) => rule.id)}>
+    <DndContext
+      sensors={sensors}
+      onDragStart={({ active }) => {
+        setDragActive(active);
+      }}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext
+        strategy={verticalListSortingStrategy}
+        items={rules.map((rule) => rule.id)}
+      >
         {rules.map((rule) => (
           <SortableItem id={rule.id} key={rule.id}>
             <Rule rule={rule} />
