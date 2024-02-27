@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "../trpc";
-import { conditionSchema } from "~/utils/rules";
+import { conditionSchema } from "~/utils/conditions";
 import { TRPCError } from "@trpc/server";
 
 export const ruleRouter = createTRPCRouter({
@@ -21,6 +21,10 @@ export const ruleRouter = createTRPCRouter({
         configuration: {
           createdById: ctx.auth.userId,
         },
+      },
+      include: {
+        configuration: true,
+        theme: true,
       },
     });
   }),
@@ -203,6 +207,83 @@ export const ruleRouter = createTRPCRouter({
       ]);
 
       return;
+    }),
+  changeName: privateProcedure
+    .input(
+      z.object({
+        id: z.string().min(1),
+        name: z.string().trim().min(1),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma.rule.update({
+        where: {
+          id: input.id,
+          configuration: {
+            createdById: ctx.auth.userId,
+          },
+        },
+        data: {
+          name: input.name,
+        },
+      });
+    }),
+  changeTheme: privateProcedure
+    .input(
+      z.object({
+        id: z.string().min(1),
+        themeId: z.string().min(1),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const themeCount = await ctx.prisma.theme.count({
+        where: {
+          id: input.themeId,
+          createdById: ctx.auth.userId,
+        },
+      });
+
+      if (themeCount === 0) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+        });
+      }
+
+      return ctx.prisma.rule.update({
+        where: {
+          id: input.id,
+          configuration: {
+            createdById: ctx.auth.userId,
+          },
+        },
+        data: {
+          theme: {
+            connect: {
+              id: input.themeId,
+            },
+          },
+        },
+      });
+    }),
+  updateCondition: privateProcedure
+    .input(
+      z.object({
+        id: z.string().min(1),
+        condition: conditionSchema,
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.rule.update({
+        where: {
+          id: input.id,
+          configuration: {
+            createdById: ctx.auth.userId,
+          },
+        },
+        data: {
+          condition: input.condition,
+        },
+      });
     }),
   delete: privateProcedure.input(z.string().min(1)).query(({ ctx, input }) => {
     return ctx.prisma.rule.delete({
