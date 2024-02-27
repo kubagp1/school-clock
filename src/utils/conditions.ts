@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Prettify } from "./utils";
 
 export const booleanConditionSchema: z.ZodType<BooleanCondition> = z.lazy(() =>
   z.object({
@@ -111,7 +112,7 @@ export const conditionSchema = z.union([
   secondConditionSchema,
 ]);
 
-export type Condition = z.infer<typeof conditionSchema>;
+export type Condition = Prettify<z.infer<typeof conditionSchema>>;
 
 export function isBooleanCondition(
   condition: Condition
@@ -119,14 +120,18 @@ export function isBooleanCondition(
   return condition.type === "boolean";
 }
 
+export const circumstancesKeys = [
+  "weekday",
+  "day",
+  "month",
+  "year",
+  "hour",
+  "minute",
+  "second",
+] as const;
+
 export type Circumstances = {
-  weekday: number;
-  day: number;
-  month: number;
-  year: number;
-  hour: number;
-  minute: number;
-  second: number;
+  [K in (typeof circumstancesKeys)[number]]: number;
 };
 
 export function isConditionTrue(
@@ -173,3 +178,20 @@ function isSimpleConditionTrue(
       return circumstance < value;
   }
 }
+
+export const defaultCondition: Condition = {
+  type: "boolean",
+  operator: "and",
+  conditions: [],
+};
+
+export const countNestedSimpleConditions = (condition: Condition): number => {
+  if (isBooleanCondition(condition)) {
+    return condition.conditions.reduce(
+      (acc, condition) => acc + countNestedSimpleConditions(condition),
+      0
+    );
+  }
+
+  return 1;
+};
