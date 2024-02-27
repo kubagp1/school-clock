@@ -29,6 +29,8 @@ import ErrorOutline from "@mui/icons-material/ErrorOutline";
 import { CenteredLoading } from "~/components/Loading";
 import { useRouter } from "next/router";
 import { RulesSection } from "~/components/dashboard/configuration/RulesSection";
+import { useIsMutating } from "@tanstack/react-query";
+import { getQueryKey } from "@trpc/react-query";
 
 export function useEditableField<T>(
   mutate: (value: T) => void,
@@ -316,6 +318,8 @@ const ConfigurationPage: NextPageWithLayout<
     pageProps.configurationId
   );
 
+  const isMutatingRules = useIsMutating(getQueryKey(api.rule.update));
+
   if (isLoading) return <CenteredLoading />;
   if (isError || data === null)
     return (
@@ -353,7 +357,14 @@ const ConfigurationPage: NextPageWithLayout<
         </Box>
         <Divider />
         <Box sx={{ p: 2 }}>
-          <Typography variant="h6">Rules</Typography>
+          <Typography variant="h6">
+            Rules{" "}
+            {isMutatingRules || isLoading ? (
+              <Typography color="GrayText" variant="body1" component="span">
+                Saving...
+              </Typography>
+            ) : null}
+          </Typography>
           <RulesSection configuration={data} />
         </Box>
         <Divider />
