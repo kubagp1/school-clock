@@ -1,7 +1,6 @@
 import { z } from "zod";
 import type { Prettify } from "./utils";
-import { RouterOutput } from "~/server/api/root";
-import { ThemeField } from "@prisma/client";
+import { type ThemeField } from "@prisma/client";
 
 export const themeFieldsArraySchema = z.array(
   z
@@ -9,6 +8,10 @@ export const themeFieldsArraySchema = z.array(
       z.object({ name: z.literal("hideClock"), value: z.boolean() }),
       z.object({ name: z.literal("clockColor"), value: z.string() }),
       z.object({ name: z.literal("clockSize"), value: z.number() }),
+      z.object({ name: z.literal("newsTickerText"), value: z.string() }),
+      z.object({ name: z.literal("newsTickerSpeed"), value: z.number() }),
+      z.object({ name: z.literal("newsTickerLoop"), value: z.number() }),
+      z.object({ name: z.literal("newsTickerHidden"), value: z.boolean() }),
     ])
     .and(
       z.object({
@@ -56,6 +59,26 @@ export const defaultThemeFields = {
   },
   hideClock: {
     name: "hideClock",
+    value: false,
+    enabled: false,
+  },
+  newsTickerText: {
+    name: "newsTickerText",
+    value: "",
+    enabled: false,
+  },
+  newsTickerSpeed: {
+    name: "newsTickerSpeed",
+    value: 50,
+    enabled: false,
+  },
+  newsTickerLoop: {
+    name: "newsTickerLoop",
+    value: 1,
+    enabled: false,
+  },
+  newsTickerHidden: {
+    name: "newsTickerHidden",
     value: false,
     enabled: false,
   },
