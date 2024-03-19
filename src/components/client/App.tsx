@@ -2,6 +2,7 @@ import styles from "./MainView.module.css";
 import { useInstance } from "./InstanceProvider";
 import { useTheme } from "./ThemeProvider";
 import { useTime } from "./TimeProvider";
+import { NewsTicker } from "./NewsTicker";
 
 export function App() {
   const instance = useInstance();
@@ -22,6 +23,7 @@ export function App() {
         {String(internetTime.getMinutes()).padStart(2, "0")}
       </div>
       <div>{instance.name}</div>
+      <NewsTicker />
     </div>
   );
 }
