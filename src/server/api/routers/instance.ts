@@ -49,8 +49,20 @@ export const instanceRouter = createTRPCRouter({
         include: {
           configuration: {
             include: {
-              baseTheme: true,
-              rules: true,
+              baseTheme: {
+                include: {
+                  fields: true,
+                },
+              },
+              rules: {
+                include: {
+                  theme: {
+                    include: {
+                      fields: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },

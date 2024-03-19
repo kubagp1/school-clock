@@ -5,8 +5,13 @@ import {
   Box,
   Switch,
 } from "@mui/material";
-import { RefObject, useRef } from "react";
-import { type ThemeData } from "~/server/api/routers/theme";
+import { type RefObject, useRef } from "react";
+import {
+  type ThemeFieldsRecord,
+  type ThemeFieldsArray,
+  themeFieldsToPartialRecord,
+  defaultThemeFields,
+} from "~/utils/theme";
 
 const ThemeField = (props: {
   onChange: () => void;
@@ -35,9 +40,18 @@ const ThemeField = (props: {
 };
 
 export default function ThemeEditor(props: {
-  onChange: (data: ThemeData) => void;
-  theme?: ThemeData;
+  onChange: (data: ThemeFieldsArray) => void;
+  initialFields?: ThemeFieldsArray;
 }) {
+  const initialFields: ThemeFieldsRecord =
+    props.initialFields !== undefined
+      ? {
+          ...defaultThemeFields,
+          ...themeFieldsToPartialRecord(props.initialFields),
+        }
+      : defaultThemeFields;
+  // We merge the default styles because not all fields are guaranteed to be present in the database.
+
   const hideClockRef = useRef<HTMLInputElement>(null);
   const clockColorRef = useRef<HTMLInputElement>(null);
   const clockSizeRef = useRef<HTMLInputElement>(null);
@@ -49,23 +63,33 @@ export default function ThemeEditor(props: {
   const handleChange = () => {
     if (
       !hideClockRef.current ||
+      !enabledHideClockRef.current ||
       !clockColorRef.current ||
-      !clockSizeRef.current
+      !enabledClockColorRef.current ||
+      !clockSizeRef.current ||
+      !enabledClockSizeRef.current
     ) {
+      alert("Something went wrong. null ref");
       return;
     }
 
-    props.onChange({
-      hideClock: enabledHideClockRef.current?.checked
-        ? hideClockRef.current.checked
-        : null,
-      clockColor: enabledClockColorRef.current?.checked
-        ? clockColorRef.current.value
-        : null,
-      clockSize: enabledClockSizeRef.current?.checked
-        ? parseInt(clockSizeRef.current.value)
-        : null,
-    });
+    props.onChange([
+      {
+        name: "hideClock",
+        value: hideClockRef.current.checked,
+        enabled: enabledHideClockRef.current.checked || false,
+      },
+      {
+        name: "clockColor",
+        value: clockColorRef.current.value,
+        enabled: enabledClockColorRef.current.checked || false,
+      },
+      {
+        name: "clockSize",
+        value: parseInt(clockSizeRef.current.value),
+        enabled: enabledClockSizeRef.current.checked || false,
+      },
+    ]);
   };
 
   return (
@@ -73,13 +97,13 @@ export default function ThemeEditor(props: {
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <ThemeField
           onChange={handleChange}
-          defaultChecked={!!(props.theme && props.theme.hideClock !== null)}
+          defaultChecked={initialFields.hideClock.enabled}
           inputRef={enabledHideClockRef}
         >
           <FormControlLabel
             control={
               <Checkbox
-                defaultChecked={props.theme?.hideClock || undefined}
+                defaultChecked={initialFields.hideClock.value}
                 inputRef={hideClockRef}
               />
             }
@@ -90,20 +114,20 @@ export default function ThemeEditor(props: {
 
         <ThemeField
           onChange={handleChange}
-          defaultChecked={!!(props.theme && props.theme.clockColor !== null)}
+          defaultChecked={initialFields.clockColor.enabled}
           inputRef={enabledClockColorRef}
         >
           <TextField
             label="Clock Color"
             inputRef={clockColorRef}
             onChange={handleChange}
-            defaultValue={props.theme?.clockColor || undefined}
+            defaultValue={initialFields.clockColor.value}
           />
         </ThemeField>
 
         <ThemeField
           onChange={handleChange}
-          defaultChecked={!!(props.theme && props.theme.clockSize !== null)}
+          defaultChecked={initialFields.clockSize.enabled}
           inputRef={enabledClockSizeRef}
         >
           <TextField
@@ -111,7 +135,7 @@ export default function ThemeEditor(props: {
             inputRef={clockSizeRef}
             type="number"
             onChange={handleChange}
-            defaultValue={props.theme?.clockSize || undefined}
+            defaultValue={initialFields.clockSize.value}
           />
         </ThemeField>
       </Box>
