@@ -6,9 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider     = "mysql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma"
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
 model Configuration {
@@ -25,18 +25,31 @@ model Configuration {
 }
 
 model Theme {
-  id          String @id @default(cuid())
-  name        String
-  createdById String
-
-  hideClock  Boolean?
-  clockColor String?
-  clockSize  Int?
-
+  id             String          @id @default(cuid())
+  name           String
+  createdById    String
+  fields         ThemeField[]
   configurations Configuration[]
   rules          Rule[]
 
   @@index([createdById])
+}
+
+enum ThemeFieldName {
+  hideClock
+  clockColor
+  clockSize
+}
+
+model ThemeField {
+  theme   Theme          @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  themeId String
+  name    ThemeFieldName
+  value   Json
+  enabled Boolean
+
+  @@id([themeId, name])
+  @@index([themeId])
 }
 
 model Instance {
@@ -61,12 +74,15 @@ model InstanceSecretRequest {
 model Rule {
   id              String        @id @default(cuid())
   name            String
-  configuration   Configuration @relation(fields: [configurationId], references: [id])
-  configurationId String
-  condition       String
+  condition       Json          @default("[]")
+  enabled         Boolean       @default(true)
+  index           Int
   theme           Theme         @relation(fields: [themeId], references: [id])
   themeId         String
+  configuration   Configuration @relation(fields: [configurationId], references: [id])
+  configurationId String
 
+  @@unique([index, configurationId])
   @@index([configurationId])
   @@index([themeId])
 }

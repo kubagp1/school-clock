@@ -6,41 +6,49 @@ import {
   privateProcedure,
   type TRPCContext,
 } from "~/server/api/trpc";
+import { themeFieldsArraySchema } from "~/utils/theme";
+import { Prettify } from "~/utils/utils";
 
 const themeNameSchema = z.string().trim().min(1);
-
-const themeDataSchema = z.object({
-  hideClock: z.boolean().nullable(),
-  clockColor: z.string().nullable(),
-  clockSize: z.number().nullable(),
-});
 
 export const themeRouter = createTRPCRouter({
   getAll: privateProcedure.query(async ({ ctx }) => {
     const results = await ctx.prisma.theme.findMany({
       where: {
-        createdById: {
-          equals: ctx.auth.userId,
+        createdById: ctx.auth.userId,
+      },
+      include: {
+        _count: {
+          select: {
+            fields: {
+              where: {
+                enabled: true,
+              },
+            },
+          },
         },
       },
     });
 
-    // count of non-null values in data fields in theme
     return results.map((theme) => ({
       ...theme,
-      enabledFieldsCount: Object.values(onlyData(theme)).filter(
-        (v) => v !== null
-      ).length,
+      _count: undefined,
+      enabledFieldsCount: theme._count.fields,
     }));
   }),
+
   getById: privateProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const theme = await ctx.prisma.theme.findUnique({
       where: {
         id: input,
+        createdById: ctx.auth.userId,
+      },
+      include: {
+        fields: true,
       },
     });
 
-    if (theme?.createdById !== ctx.auth.userId) {
+    if (theme === null) {
       throw new TRPCError({
         code: "UNAUTHORIZED",
       });
@@ -48,23 +56,27 @@ export const themeRouter = createTRPCRouter({
 
     return theme;
   }),
+
   create: privateProcedure
     .input(
       z.object({
         name: themeNameSchema,
-        data: themeDataSchema,
+        fields: themeFieldsArraySchema,
       })
     )
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       return ctx.prisma.theme.create({
         data: {
           name: input.name,
           createdById: ctx.auth.userId,
-          ...input.data,
+          fields: {
+            create: input.fields,
+          },
         },
       });
     }),
-  changeName: privateProcedure
+
+  updateName: privateProcedure
     .input(
       z.object({
         id: z.string(),
@@ -72,42 +84,58 @@ export const themeRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      await checkThemeOwnership(ctx, input.id);
-
       return ctx.prisma.theme.update({
         where: {
           id: input.id,
+          createdById: ctx.auth.userId,
         },
         data: {
           name: input.name,
         },
       });
     }),
-  changeData: privateProcedure
+
+  updateFields: privateProcedure
     .input(
       z.object({
         id: z.string(),
-        data: themeDataSchema,
+        data: themeFieldsArraySchema,
       })
     )
     .mutation(async ({ ctx, input }) => {
       await checkThemeOwnership(ctx, input.id);
 
-      return ctx.prisma.theme.update({
-        where: {
-          id: input.id,
-        },
-        data: input.data,
-      });
+      const upserts = input.data.map((field) =>
+        ctx.prisma.themeField.upsert({
+          where: {
+            themeId_name: {
+              themeId: input.id,
+              name: field.name,
+            },
+          },
+          create: {
+            themeId: input.id,
+            name: field.name,
+            value: field.value,
+            enabled: field.enabled,
+          },
+          update: {
+            value: field.value,
+            enabled: field.enabled,
+          },
+        })
+      );
+
+      await ctx.prisma.$transaction(upserts);
     }),
+
   delete: privateProcedure
     .input(z.string())
     .mutation(async ({ ctx, input }) => {
-      await checkThemeOwnership(ctx, input);
-
       await ctx.prisma.theme.delete({
         where: {
           id: input,
+          createdById: ctx.auth.userId,
         },
       });
     }),
@@ -126,22 +154,3 @@ export async function checkThemeOwnership(ctx: TRPCContext, themeId: string) {
     });
   }
 }
-
-const nonDataFields = ["id", "name", "createdById"] as const;
-
-const onlyData = (theme: Theme) => {
-  const { id, name, createdById, ...data } = theme;
-  return data;
-};
-
-// INTEGRITY CHECKS
-
-export type ThemeData = StrictOmit<
-  Required<Theme>,
-  (typeof nonDataFields)[number]
->;
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _typeGuard = (foo: ThemeData): z.infer<typeof themeDataSchema> => foo;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _typeGuard2 = (foo: z.infer<typeof themeDataSchema>): ThemeData => foo;

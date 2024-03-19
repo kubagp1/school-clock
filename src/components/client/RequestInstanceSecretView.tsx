@@ -1,17 +1,18 @@
-import { useContext, useEffect } from "react";
-import { InstanceSecretContext } from "~/components/client/InstanceSecretProvider";
+import { useEffect } from "react";
 import { api } from "~/utils/api";
 
-export function RequestInstanceSecretView() {
-  const { instanceSecret, setInstanceSecret } = useContext(
-    InstanceSecretContext
-  );
+type Props = {
+  setInstanceSecret: (value: string) => void;
+};
+
+export function RequestInstanceSecretView(props: Props) {
+  const { setInstanceSecret } = props;
 
   const {
     mutate: createSecretRequest,
     data: secretRequest,
-    isError: isSecretRequestError,
-    isLoading: isSecretRequestLoading,
+    isError,
+    isLoading,
   } = api.instanceSecretRequest.create.useMutation();
 
   useEffect(() => {
@@ -24,7 +25,7 @@ export function RequestInstanceSecretView() {
       claimToken: secretRequest?.claimToken ?? "",
     },
     {
-      enabled: secretRequest !== undefined && instanceSecret === null,
+      enabled: secretRequest !== undefined,
       refetchInterval: 1000,
       onSuccess: (data) => {
         if (data === null) return;
@@ -36,8 +37,8 @@ export function RequestInstanceSecretView() {
   return (
     <div>
       <h1>Request Instance Secret</h1>
-      {isSecretRequestLoading && <p>Loading...</p>}
-      {isSecretRequestError && <p>Error</p>}
+      {isLoading && <p>Loading...</p>}
+      {isError && <p>Error</p>}
       {secretRequest && "Request code: " + secretRequest.requestCode}
     </div>
   );

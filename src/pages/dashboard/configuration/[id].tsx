@@ -24,10 +24,13 @@ import { type NextPageWithLayout } from "~/pages/_app";
 import { type RefObject, useRef, useState } from "react";
 import { type RouterOutput } from "~/server/api/root";
 import NextLink from "next/link";
-import SelectTheme from "~/components/SelectTheme";
+import SelectTheme from "~/components/dashboard/SelectTheme";
 import ErrorOutline from "@mui/icons-material/ErrorOutline";
 import { CenteredLoading } from "~/components/Loading";
 import { useRouter } from "next/router";
+import { RulesSection } from "~/components/dashboard/configuration/RulesSection";
+import { useIsMutating } from "@tanstack/react-query";
+import { getQueryKey } from "@trpc/react-query";
 
 export function useEditableField<T>(
   mutate: (value: T) => void,
@@ -279,8 +282,10 @@ const InstancesSection = (props: {
           ></TextField>
         </Box>
         <DialogActions>
+          <Button color="error" onClick={handleClose}>
+            Cancel
+          </Button>
           <Button onClick={createInstance}>Create</Button>
-          <Button color="error">Cancel</Button>
         </DialogActions>
       </Dialog>
 
@@ -315,6 +320,9 @@ const ConfigurationPage: NextPageWithLayout<
     pageProps.configurationId
   );
 
+  const isMutatingRules = useIsMutating(getQueryKey(api.rule.update));
+  const isMutatingRulesOrder = useIsMutating(getQueryKey(api.rule.updateOrder));
+
   if (isLoading) return <CenteredLoading />;
   if (isError || data === null)
     return (
@@ -339,7 +347,7 @@ const ConfigurationPage: NextPageWithLayout<
   return (
     <>
       <Head>
-        <title>{data.name} | Configuration</title>
+        <title>{`${data.name} | Configuration`}</title>
       </Head>
       <Paper>
         <Box sx={{ p: 2 }}>
@@ -349,6 +357,18 @@ const ConfigurationPage: NextPageWithLayout<
         <Box sx={{ p: 2 }}>
           <Typography variant="h6">Base theme</Typography>
           <BaseThemeField configuration={data}></BaseThemeField>
+        </Box>
+        <Divider />
+        <Box sx={{ p: 2 }}>
+          <Typography variant="h6">
+            Rules{" "}
+            {isMutatingRules || isMutatingRulesOrder ? (
+              <Typography color="GrayText" variant="body1" component="span">
+                Saving...
+              </Typography>
+            ) : null}
+          </Typography>
+          <RulesSection configuration={data} />
         </Box>
         <Divider />
         <InstancesSection configuration={data} />

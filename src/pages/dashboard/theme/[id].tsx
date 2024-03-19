@@ -27,8 +27,8 @@ import { RouterOutput } from "~/server/api/root";
 import { useEditableField } from "../configuration/[id]";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import ThemeEditor from "~/components/ThemeEditor";
-import { ThemeData } from "~/server/api/routers/theme";
+import ThemeEditor from "~/components/dashboard/ThemeEditor";
+import { ThemeFieldsArray, themeFieldsArraySchema } from "~/utils/theme";
 
 function NameField(props: { theme: RouterOutput["theme"]["getById"] }) {
   const utils = api.useContext();
@@ -38,7 +38,7 @@ function NameField(props: { theme: RouterOutput["theme"]["getById"] }) {
   const nameRef = useRef<HTMLInputElement>(null);
 
   const { mutate, isLoading, isError, reset } =
-    api.theme.changeName.useMutation({
+    api.theme.updateName.useMutation({
       onSuccess: () => {
         void utils.theme.getAll.invalidate();
         void utils.theme.getById.invalidate(theme.id);
@@ -135,10 +135,13 @@ function DeleteButton(props: { theme: RouterOutput["theme"]["getById"] }) {
   );
 }
 
-const ThemeSection = (props: { theme: ThemeData & { id: string } }) => {
-  const themeRef = useRef<ThemeData>(props.theme);
+const ThemeSection = (props: {
+  themeFields: ThemeFieldsArray;
+  themeId: string;
+}) => {
+  const themeRef = useRef<ThemeFieldsArray>(props.themeFields);
 
-  const handleChange = (theme: ThemeData) => {
+  const handleChange = (theme: ThemeFieldsArray) => {
     themeRef.current = theme;
   };
 
@@ -149,12 +152,12 @@ const ThemeSection = (props: { theme: ThemeData & { id: string } }) => {
     }
 
     mutate({
-      id: props.theme.id,
+      id: props.themeId,
       data: themeRef.current,
     });
   };
 
-  const { mutate } = api.theme.changeData.useMutation({
+  const { mutate } = api.theme.updateFields.useMutation({
     onSuccess: () => {
       alert("Saved changes");
     },
@@ -165,7 +168,10 @@ const ThemeSection = (props: { theme: ThemeData & { id: string } }) => {
 
   return (
     <>
-      <ThemeEditor theme={props.theme} onChange={handleChange}></ThemeEditor>
+      <ThemeEditor
+        initialFields={props.themeFields}
+        onChange={handleChange}
+      ></ThemeEditor>
       <Box sx={{ display: "flex", justifyContent: "right" }}>
         <Button variant="contained" sx={{ mt: 2 }} onClick={handleSave}>
           Save changes
@@ -207,10 +213,12 @@ const ThemePage: NextPageWithLayout<
       </Box>
     );
 
+  const themeFields = themeFieldsArraySchema.parse(data.fields);
+
   return (
     <>
       <Head>
-        <title>{data.name} | Theme</title>
+        <title>{`${data.name} | Theme`}</title>
       </Head>
       <Paper>
         <Box sx={{ p: 2 }}>
@@ -218,7 +226,7 @@ const ThemePage: NextPageWithLayout<
         </Box>
         <Divider />
         <Box sx={{ p: 2 }}>
-          <ThemeSection theme={data} />
+          <ThemeSection themeFields={themeFields} themeId={data.id} />
         </Box>
         <Divider />
         <Box sx={{ p: 2 }}>

@@ -6,11 +6,18 @@ import {
   Typography,
   Container,
   Link,
+  useMediaQuery,
 } from "@mui/material";
 import { type ReactElement } from "react";
 import NextLink from "next/link";
+import { useTheme } from "@mui/material/styles";
+import { useRouter } from "next/router";
 
 const DashboardLayout = ({ children }: { children: ReactElement }) => {
+  const router = useRouter();
+  const disableGutters =
+    !useMediaQuery(useTheme().breakpoints.up("sm")) &&
+    router.pathname !== "/dashboard";
   return (
     <Box
       sx={{
@@ -32,7 +39,12 @@ const DashboardLayout = ({ children }: { children: ReactElement }) => {
       </AppBar>
       <Toolbar />
       <Box>
-        <Container sx={{ pt: 2 }}>{children}</Container>
+        <Container
+          disableGutters={disableGutters}
+          sx={disableGutters ? null : { pt: 2 }}
+        >
+          {children}
+        </Container>
       </Box>
     </Box>
   );

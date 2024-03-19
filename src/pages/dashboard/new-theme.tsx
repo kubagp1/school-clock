@@ -11,13 +11,13 @@ import Head from "next/head";
 import router from "next/router";
 import { useRef } from "react";
 import { getDashboardLayout } from "~/components/DashboardLayout";
-import ThemeEditor from "~/components/ThemeEditor";
-import { type ThemeData } from "~/server/api/routers/theme";
+import ThemeEditor from "~/components/dashboard/ThemeEditor";
+import type { ThemeFieldsArray } from "~/utils/theme";
 import { api } from "~/utils/api";
 
 function NewTheme() {
   const nameRef = useRef<HTMLInputElement>(null);
-  const dataRef = useRef<ThemeData | null>(null);
+  const themeFieldsRef = useRef<ThemeFieldsArray | null>(null);
 
   const { mutate, isLoading, isError } = api.theme.create.useMutation({
     onSuccess: async (newTheme) => {
@@ -26,10 +26,10 @@ function NewTheme() {
   });
 
   const handleSubmit = () => {
-    if (nameRef.current?.value && dataRef.current) {
+    if (nameRef.current?.value && themeFieldsRef.current) {
       mutate({
         name: nameRef.current.value,
-        data: dataRef.current,
+        fields: themeFieldsRef.current,
       });
     }
   };
@@ -48,7 +48,7 @@ function NewTheme() {
         </Box>
         <Divider />
         <Box sx={{ p: 2 }}>
-          <ThemeEditor onChange={(data) => (dataRef.current = data)} />
+          <ThemeEditor onChange={(data) => (themeFieldsRef.current = data)} />
         </Box>
         <Divider />
         <Box
