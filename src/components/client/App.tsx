@@ -20,7 +20,8 @@ export function App() {
         }}
       >
         {String(internetTime.getHours()).padStart(2, "0")}:
-        {String(internetTime.getMinutes()).padStart(2, "0")}
+        {String(internetTime.getMinutes()).padStart(2, "0")}:
+        {String(internetTime.getSeconds()).padStart(2, "0")}
       </div>
       <div>{instance.name}</div>
       <NewsTicker />
