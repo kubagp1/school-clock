@@ -1,17 +1,9 @@
-import { useContext, useEffect, useState } from "react";
-import InstanceSecretProvider, {
-  InstanceSecretContext,
-} from "~/components/client/InstanceSecretProvider";
-import { RequestInstanceSecretView } from "../../components/client/RequestInstanceSecretView";
-import { MainView } from "~/components/client/MainView";
-
-function App() {
-  const { instanceSecret } = useContext(InstanceSecretContext);
-
-  return (
-    <div>{!instanceSecret ? <RequestInstanceSecretView /> : <MainView />}</div>
-  );
-}
+import { useEffect, useState } from "react";
+import InstanceSecretProvider from "~/components/client/InstanceSecretProvider";
+import { App } from "~/components/client/App";
+import { InstanceProvider } from "~/components/client/InstanceProvider";
+import { ThemeProvider } from "~/components/client/ThemeProvider";
+import { TimeProvider } from "~/components/client/TimeProvider";
 
 export default function Client() {
   const [isMounted, setIsMounted] = useState(false);
@@ -19,13 +11,19 @@ export default function Client() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
-  if (!isMounted) return "Enable JavaScript to view this page.";
+  if (!isMounted) return "Running on server or something went wrong.";
 
   // no server-side rendering
 
   return (
-    <InstanceSecretProvider>
-      <App />
-    </InstanceSecretProvider>
+    <TimeProvider>
+      <InstanceSecretProvider>
+        <InstanceProvider>
+          <ThemeProvider>
+            <App />
+          </ThemeProvider>
+        </InstanceProvider>
+      </InstanceSecretProvider>
+    </TimeProvider>
   );
 }

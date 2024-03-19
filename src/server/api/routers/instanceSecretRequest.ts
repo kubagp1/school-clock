@@ -11,7 +11,7 @@ import {
 export const instanceSecretRequestRouter = createTRPCRouter({
   create: publicProcedure.mutation(async ({ ctx }) => {
     // cleanup old requests
-    await ctx.prisma.instanceSecretRequest.deleteMany({
+    const deleteOld = ctx.prisma.instanceSecretRequest.deleteMany({
       where: {
         createdAt: {
           lte: new Date(Date.now() - 1000 * 60 * 60),
@@ -19,13 +19,17 @@ export const instanceSecretRequestRouter = createTRPCRouter({
       },
     });
 
-    return ctx.prisma.instanceSecretRequest.create({
+    const create = ctx.prisma.instanceSecretRequest.create({
       data: {
         requestCode: Math.floor(
           100000000 + Math.random() * 900000000
         ).toString(),
       },
     });
+
+    await Promise.all([deleteOld, create]);
+
+    return create;
   }),
   getSecret: publicProcedure
     .input(

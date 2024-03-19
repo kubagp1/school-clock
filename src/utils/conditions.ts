@@ -195,3 +195,7 @@ export const countNestedSimpleConditions = (condition: Condition): number => {
 
   return 1;
 };
+
+export const validateCondition = (condition: unknown): Condition => {
+  return conditionSchema.parse(condition);
+};
