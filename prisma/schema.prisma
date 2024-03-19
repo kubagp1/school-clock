@@ -39,6 +39,10 @@ enum ThemeFieldName {
   hideClock
   clockColor
   clockSize
+  newsTickerText
+  newsTickerSpeed
+  newsTickerLoop
+  newsTickerHidden
 }
 
 model ThemeField {
