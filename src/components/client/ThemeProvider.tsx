@@ -87,5 +87,6 @@ function generateCircumstances(time: Date): Circumstances {
     hour: time.getHours(),
     minute: time.getMinutes(),
     second: time.getSeconds(),
+    datetime: time,
   };
 }
