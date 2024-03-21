@@ -6,6 +6,7 @@ import { themeRouter } from "./routers/theme";
 import { instanceRouter } from "./routers/instance";
 import { instanceSecretRequestRouter } from "./routers/instanceSecretRequest";
 import { ruleRouter } from "./routers/rule";
+import { newsTickerRouter } from "./routers/newsTicker";
 
 /**
  * This is the primary router for your server.
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   instance: instanceRouter,
   instanceSecretRequest: instanceSecretRequestRouter,
   rule: ruleRouter,
+  newsTicker: newsTickerRouter,
 });
 
 // export type definition of API

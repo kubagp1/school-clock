@@ -31,6 +31,7 @@ import { useRouter } from "next/router";
 import { RulesSection } from "~/components/dashboard/configuration/RulesSection";
 import { useIsMutating } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
+import { NewsTickerSection } from "~/components/dashboard/configuration/NewsTickerSection";
 
 export function useEditableField<T>(
   mutate: (value: T) => void,
@@ -372,6 +373,8 @@ const ConfigurationPage: NextPageWithLayout<
         </Box>
         <Divider />
         <InstancesSection configuration={data} />
+        <Divider />
+        <NewsTickerSection configuration={data} />
         <Divider />
         <Box sx={{ p: 2 }}>
           <DeleteButton configuration={data} />
