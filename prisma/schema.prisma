@@ -32,7 +32,6 @@ model Theme {
   fields         ThemeField[]
   configurations Configuration[]
   rules          Rule[]
-  newsTickers    NewsTicker[]
   internal       Boolean         @default(false)
 
   @@index([createdById])
@@ -78,28 +77,30 @@ model InstanceSecretRequest {
   createdAt      DateTime @default(now())
 }
 
+enum RuleInternalGroup {
+  newsTicker
+}
+
 model Rule {
-  id              String        @id @default(cuid())
+  id              String             @id @default(cuid())
   name            String
-  condition       Json          @default("[]")
-  enabled         Boolean       @default(true)
   index           Int
-  theme           Theme         @relation(fields: [themeId], references: [id])
+  internalGroup   RuleInternalGroup?
+  condition       Json
+  enabled         Boolean            @default(true)
+  theme           Theme              @relation(fields: [themeId], references: [id])
   themeId         String
-  configuration   Configuration @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+  configuration   Configuration      @relation(fields: [configurationId], references: [id], onDelete: Cascade)
   configurationId String
   newsTickers     NewsTicker[]
-  internal        Boolean       @default(false)
 
-  @@unique([index, configurationId])
+  @@unique([index, internalGroup, configurationId])
   @@index([configurationId])
   @@index([themeId])
 }
 
 model NewsTicker {
   id              String        @id @default(cuid())
-  theme           Theme         @relation(fields: [themeId], references: [id])
-  themeId         String
   rule            Rule          @relation(fields: [ruleId], references: [id])
   ruleId          String
   configuration   Configuration @relation(fields: [configurationId], references: [id], onDelete: Cascade)
