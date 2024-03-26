@@ -109,7 +109,7 @@ export const datetimeConditionSchema = z.object({
     z.literal("gt"),
     z.literal("lt"),
   ]),
-  value: z.date(),
+  value: z.string(),
 });
 
 export type DatetimeCondition = z.infer<typeof datetimeConditionSchema>;
@@ -218,17 +218,19 @@ function isSimpleConditionTrue(
 function isDatetimeConditionTrue(
   operator: DatetimeCondition["operator"],
   circumstance: Date,
-  value: Date
+  value: string
 ): boolean {
+  const dateValue = new Date(value);
+
   switch (operator) {
     case "eq":
-      return circumstance.getTime() === value.getTime();
+      return circumstance.getTime() === dateValue.getTime();
     case "neq":
-      return circumstance.getTime() !== value.getTime();
+      return circumstance.getTime() !== dateValue.getTime();
     case "gt":
-      return circumstance.getTime() > value.getTime();
+      return circumstance.getTime() > dateValue.getTime();
     case "lt":
-      return circumstance.getTime() < value.getTime();
+      return circumstance.getTime() < dateValue.getTime();
   }
 }
 
