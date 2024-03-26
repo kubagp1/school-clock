@@ -1,20 +1,26 @@
 import Marquee from "react-fast-marquee";
 import { useTheme } from "./ThemeProvider";
-import { use, useEffect, useState } from "react";
-import { set } from "zod";
+import { useEffect, useState } from "react";
 
 export function NewsTicker() {
   const theme = useTheme();
 
-  const [marqueeFinished, setMarqueeFinished] = useState(false);
+  const [marqueeFinished, setMarqueeFinished] = useState(true);
 
-  const handleMarqueeFinish = () => {
+  const handleMarqueeFinish = (e: { elapsedTime: number }) => {
+    console.log(e);
+    if (e?.elapsedTime === 0) {
+      console.error("Marquee bugged");
+      return;
+    } // bug in react-fast-marquee or Chrome, not sure
+
     setMarqueeFinished(true);
   };
 
   useEffect(() => {
     setMarqueeFinished(false);
   }, [theme.newsTickerText]);
+  // TODO: Handle a scenario when the text stays the same but different rule sets it
 
   return (
     <div>
@@ -30,7 +36,7 @@ export function NewsTicker() {
             backgroundColor: "#ddd",
           }}
           className="marquee"
-          onFinish={handleMarqueeFinish}
+          onFinish={handleMarqueeFinish as () => void}
         >
           <span style={{ paddingLeft: "100vw" }}>{theme.newsTickerText}</span>
         </Marquee>
