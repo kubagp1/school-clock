@@ -70,7 +70,7 @@ export const newsTickerRouter = createTRPCRouter({
           )?.value,
           forceHiddenFalse: newsTicker.rule.theme.fields.find(
             (field) => field.name === "newsTickerHidden"
-          )?.value,
+          )?.enabled,
         })
       );
     }),
