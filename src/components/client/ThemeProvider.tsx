@@ -7,7 +7,7 @@ import {
   onlyEnabledFields,
   themeFieldsRecordToNameValue,
 } from "~/utils/theme";
-import { useInstance } from "./InstanceProvider";
+import { type Instance, useInstance } from "./InstanceProvider";
 import {
   type Circumstances,
   isConditionTrue,
@@ -33,34 +33,23 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   const currentCircumstances = generateCircumstances(internetTime);
 
-  const enabledRules = instance.configuration.rules.filter(
-    (rule) => rule.enabled
+  const userThemeFields = getFieldsToApply(
+    instance.configuration.rules.filter((rule) => rule.internalGroup === null),
+    currentCircumstances
   );
 
-  const activeRules = enabledRules.filter((rule) =>
-    isConditionTrue(validateCondition(rule.condition), currentCircumstances)
-  );
-
-  const activeRulesOnlyEnabled = activeRules.map((rule) => ({
-    ...rule,
-    theme: {
-      ...rule.theme,
-      fields: onlyEnabledFields(validateThemeFieldsArray(rule.theme.fields)),
-    },
-  }));
-
-  const activeRulesSorted = activeRulesOnlyEnabled.sort(
-    (a, b) => b.index - a.index
-  );
-
-  const activeRulesThemeFields = activeRulesSorted.map((rule) =>
-    themeFieldsToPartialRecord(rule.theme.fields)
+  const newsTickerThemeFields = getFieldsToApply(
+    instance.configuration.rules.filter(
+      (rule) => rule.internalGroup === "newsTicker"
+    ),
+    currentCircumstances
   );
 
   const themeFields = {
     ...defaultThemeFields,
     ...baseThemeEnabledFields,
-    ...activeRulesThemeFields.reduce((acc, val) => ({ ...acc, ...val }), {}),
+    ...userThemeFields,
+    ...newsTickerThemeFields,
   };
 
   const theme = themeFieldsRecordToNameValue(themeFields);
@@ -90,3 +79,31 @@ function generateCircumstances(time: Date): Circumstances {
     datetime: time,
   };
 }
+
+function getFieldsToApply(rules: Rule[], circumstances: Circumstances) {
+  const enabledRules = rules.filter((rule) => rule.enabled);
+
+  const activeRules = enabledRules.filter((rule) =>
+    isConditionTrue(validateCondition(rule.condition), circumstances)
+  );
+
+  const activeRulesOnlyEnabled = activeRules.map((rule) => ({
+    ...rule,
+    theme: {
+      ...rule.theme,
+      fields: onlyEnabledFields(validateThemeFieldsArray(rule.theme.fields)),
+    },
+  }));
+
+  const activeRulesSorted = activeRulesOnlyEnabled.sort(
+    (a, b) => b.index - a.index
+  );
+
+  const activeRulesThemeFields = activeRulesSorted.map((rule) =>
+    themeFieldsToPartialRecord(rule.theme.fields)
+  );
+
+  return activeRulesThemeFields.reduce((acc, val) => ({ ...acc, ...val }), {});
+}
+
+export type Rule = Instance["configuration"]["rules"][number];
