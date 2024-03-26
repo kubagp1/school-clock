@@ -69,13 +69,13 @@ const ConditionEditor = (props: EditorProps) => {
       newCondition = {
         ...condition,
         type: newType,
-        value: new Date(condition.value),
+        value: new Date().toISOString(),
       };
     } else if (condition.type === "datetime") {
       newCondition = {
         ...condition,
         type: newType,
-        value: condition.value.getTime(),
+        value: 0,
       };
     } else {
       newCondition = {
@@ -236,14 +236,14 @@ const ConditionEditor = (props: EditorProps) => {
         type="number"
         value={
           condition.type === "datetime"
-            ? condition.value.getTime()
+            ? new Date(condition.value).getTime()
             : condition.value
         }
         onChange={(e) => {
           if (condition.type === "datetime") {
             return onChange({
               ...condition,
-              value: new Date(parseInt(e.target.value)),
+              value: new Date(parseInt(e.target.value)).toISOString(),
             });
           }
           onChange({
