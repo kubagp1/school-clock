@@ -4,6 +4,8 @@ import { useInstanceSecret } from "./InstanceSecretProvider";
 
 type InstanceContextState = RouterOutputs["instance"]["getBySecret"];
 
+export type Instance = InstanceContextState;
+
 export const InstanceContext = createContext<InstanceContextState | undefined>(
   undefined
 );
