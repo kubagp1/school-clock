@@ -19,85 +19,109 @@ type EditorDialogProps = (
 };
 
 function EditorDialog(props: EditorDialogProps) {
-  const DialogContent = (props: EditorDialogProps) => {
-    const startRef = useRef<HTMLInputElement>(null);
-    const endRef = useRef<HTMLInputElement>(null);
-    const textRef = useRef<HTMLTextAreaElement>(null);
-    const loopRef = useRef<HTMLInputElement>(null);
-    const speedRef = useRef<HTMLInputElement>(null);
-    const forceHiddenFalseRef = useRef<HTMLInputElement>(null);
+  const startRef = useRef<HTMLInputElement>(null);
+  const endRef = useRef<HTMLInputElement>(null);
+  const textRef = useRef<HTMLTextAreaElement>(null);
+  const loopRef = useRef<HTMLInputElement>(null);
+  const speedRef = useRef<HTMLInputElement>(null);
+  const forceHiddenFalseRef = useRef<HTMLInputElement>(null);
 
-    const handleSubmit = () => {
-      if (!startRef.current?.value) return;
-      if (!endRef.current?.value) return;
-      if (!textRef.current?.value) return;
-      if (!loopRef.current?.value) return;
-      if (!speedRef.current?.value) return;
-      if (forceHiddenFalseRef.current?.checked === undefined) return;
+  const handleSubmit = () => {
+    if (!startRef.current?.value) return;
+    if (!endRef.current?.value) return;
+    if (!textRef.current?.value) return;
+    if (!loopRef.current?.value) return;
+    if (!speedRef.current?.value) return;
+    if (forceHiddenFalseRef.current?.checked === undefined) return;
 
-      props.onSubmit({
-        startAt: new Date(startRef.current.value),
-        endAt: new Date(endRef.current.value),
-        text: textRef.current.value,
-        loop: parseInt(loopRef.current.value),
-        speed: parseInt(speedRef.current.value),
-        forceHiddenFalse: forceHiddenFalseRef.current.checked,
-      });
-    };
+    props.onSubmit({
+      startAt: new Date(startRef.current.value),
+      endAt: new Date(endRef.current.value),
+      text: textRef.current.value,
+      loop: parseInt(loopRef.current.value),
+      speed: parseInt(speedRef.current.value),
+      forceHiddenFalse: forceHiddenFalseRef.current.checked,
+    });
+  };
 
-    const populateInputs = () => {
-      if (props.mode === "edit") {
-        startRef.current!.value = props.newsTicker.startAt
-          .toISOString()
-          .slice(0, 16);
-        endRef.current!.value = props.newsTicker.endAt
-          .toISOString()
-          .slice(0, 16);
-        textRef.current!.value = props.newsTicker.text;
-        loopRef.current!.value = props.newsTicker.loop.toString();
-        speedRef.current!.value = props.newsTicker.speed.toString();
-        forceHiddenFalseRef.current!.checked =
-          props.newsTicker.forceHiddenFalse;
-      } else {
-        startRef.current!.value = "";
-        endRef.current!.value = "";
-        textRef.current!.value = "";
-        loopRef.current!.value = "";
-        speedRef.current!.value = "";
-        forceHiddenFalseRef.current!.checked = false;
-      }
-    };
-
-    useEffect(populateInputs, []);
-
-    return (
-      <>
+  return (
+    <Dialog open={props.open} onClose={props.onClose}>
+      <div style={{ padding: "32px" }}>
         <h2>{props.mode === "create" ? "Create" : "Edit"} news ticker</h2>
-        start: <input ref={startRef} type="datetime-local" />
+        start:{" "}
+        <input
+          ref={startRef}
+          defaultValue={
+            props.mode === "edit"
+              ? convertToDateTimeLocalString(props.newsTicker.startAt)
+              : ""
+          }
+          type="datetime-local"
+        />
         <br />
-        end: <input ref={endRef} type="datetime-local" />
+        end:{" "}
+        <input
+          ref={endRef}
+          defaultValue={
+            props.mode === "edit"
+              ? convertToDateTimeLocalString(props.newsTicker.endAt)
+              : ""
+          }
+          type="datetime-local"
+        />
         <br />
-        text: <textarea ref={textRef} />
+        text:{" "}
+        <textarea
+          ref={textRef}
+          cols={60}
+          rows={10}
+          defaultValue={props.mode === "edit" ? props.newsTicker.text : ""}
+        />
         <br />
-        loop: <input ref={loopRef} type="number" /> <br />
-        speed: <input ref={speedRef} type="number" /> <br />
+        loop:{" "}
+        <input
+          ref={loopRef}
+          defaultValue={props.mode === "edit" ? props.newsTicker.loop : ""}
+          type="number"
+        />{" "}
+        <br />
+        speed:{" "}
+        <input
+          ref={speedRef}
+          defaultValue={props.mode === "edit" ? props.newsTicker.speed : ""}
+          type="number"
+        />{" "}
+        <br />
         <label htmlFor="hiddenfalse">force hidden false</label>{" "}
-        <input ref={forceHiddenFalseRef} type="checkbox" id="hiddenfalse" />
+        <input
+          ref={forceHiddenFalseRef}
+          defaultChecked={
+            props.mode === "edit"
+              ? props.newsTicker.forceHiddenFalse
+              : undefined
+          }
+          type="checkbox"
+          id="hiddenfalse"
+        />
         <br />
         <button onClick={handleSubmit}>
           {props.mode === "create" ? "Create" : "Edit"}
         </button>
         <button onClick={props.onClose}>Cancel</button>
-      </>
-    );
-  };
-
-  return (
-    <Dialog open={props.open} onClose={props.onClose}>
-      <DialogContent {...props} />
+      </div>
     </Dialog>
   );
 }
+
+const convertToDateTimeLocalString = (date: Date) => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}` as const;
+};
 
 function useEditorDialogCreate(configurationId: string): {
   setOpen: (value: boolean) => void;
