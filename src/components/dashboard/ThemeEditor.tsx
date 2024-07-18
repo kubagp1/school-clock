@@ -55,10 +55,18 @@ export default function ThemeEditor(props: {
   const hideClockRef = useRef<HTMLInputElement>(null);
   const clockColorRef = useRef<HTMLInputElement>(null);
   const clockSizeRef = useRef<HTMLInputElement>(null);
+  const newsTickerTextRef = useRef<HTMLInputElement>(null);
+  const newsTickerSpeedRef = useRef<HTMLInputElement>(null);
+  const newsTickerLoopRef = useRef<HTMLInputElement>(null);
+  const newsTickerHiddenRef = useRef<HTMLInputElement>(null);
 
   const enabledHideClockRef = useRef<HTMLInputElement>(null);
   const enabledClockColorRef = useRef<HTMLInputElement>(null);
   const enabledClockSizeRef = useRef<HTMLInputElement>(null);
+  const enabledNewsTickerTextRef = useRef<HTMLInputElement>(null);
+  const enabledNewsTickerSpeedRef = useRef<HTMLInputElement>(null);
+  const enabledNewsTickerLoopRef = useRef<HTMLInputElement>(null);
+  const enabledNewsTickerHiddenRef = useRef<HTMLInputElement>(null);
 
   const handleChange = () => {
     if (
@@ -67,7 +75,15 @@ export default function ThemeEditor(props: {
       !clockColorRef.current ||
       !enabledClockColorRef.current ||
       !clockSizeRef.current ||
-      !enabledClockSizeRef.current
+      !enabledClockSizeRef.current ||
+      !newsTickerTextRef.current ||
+      !enabledNewsTickerTextRef.current ||
+      !newsTickerSpeedRef.current ||
+      !enabledNewsTickerSpeedRef.current ||
+      !newsTickerLoopRef.current ||
+      !enabledNewsTickerLoopRef.current ||
+      !newsTickerHiddenRef.current ||
+      !enabledNewsTickerHiddenRef.current
     ) {
       alert("Something went wrong. null ref");
       return;
@@ -88,6 +104,26 @@ export default function ThemeEditor(props: {
         name: "clockSize",
         value: parseInt(clockSizeRef.current.value),
         enabled: enabledClockSizeRef.current.checked || false,
+      },
+      {
+        name: "newsTickerText",
+        value: newsTickerTextRef.current.value,
+        enabled: enabledNewsTickerTextRef.current.checked || false,
+      },
+      {
+        name: "newsTickerSpeed",
+        value: parseInt(newsTickerSpeedRef.current.value),
+        enabled: enabledNewsTickerSpeedRef.current.checked || false,
+      },
+      {
+        name: "newsTickerLoop",
+        value: parseInt(newsTickerLoopRef.current.value),
+        enabled: enabledNewsTickerLoopRef.current.checked || false,
+      },
+      {
+        name: "newsTickerHidden",
+        value: newsTickerHiddenRef.current.checked,
+        enabled: enabledNewsTickerHiddenRef.current.checked || false,
       },
     ]);
   };
@@ -136,6 +172,64 @@ export default function ThemeEditor(props: {
             type="number"
             onChange={handleChange}
             defaultValue={initialFields.clockSize.value}
+          />
+        </ThemeField>
+
+        <ThemeField
+          onChange={handleChange}
+          defaultChecked={initialFields.newsTickerText.enabled}
+          inputRef={enabledNewsTickerTextRef}
+        >
+          <TextField
+            label="News Ticker Text"
+            inputRef={newsTickerTextRef}
+            onChange={handleChange}
+            defaultValue={initialFields.newsTickerText.value}
+          />
+        </ThemeField>
+
+        <ThemeField
+          onChange={handleChange}
+          defaultChecked={initialFields.newsTickerSpeed.enabled}
+          inputRef={enabledNewsTickerSpeedRef}
+        >
+          <TextField
+            label="News Ticker Speed"
+            inputRef={newsTickerSpeedRef}
+            type="number"
+            onChange={handleChange}
+            defaultValue={initialFields.newsTickerSpeed.value}
+          />
+        </ThemeField>
+
+        <ThemeField
+          onChange={handleChange}
+          defaultChecked={initialFields.newsTickerLoop.enabled}
+          inputRef={enabledNewsTickerLoopRef}
+        >
+          <TextField
+            label="News Ticker Loop"
+            inputRef={newsTickerLoopRef}
+            type="number"
+            onChange={handleChange}
+            defaultValue={initialFields.newsTickerLoop.value}
+          />
+        </ThemeField>
+
+        <ThemeField
+          onChange={handleChange}
+          defaultChecked={initialFields.newsTickerHidden.enabled}
+          inputRef={enabledNewsTickerHiddenRef}
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                defaultChecked={initialFields.newsTickerHidden.value}
+                inputRef={newsTickerHiddenRef}
+              />
+            }
+            label="Hide News Ticker"
+            onChange={handleChange}
           />
         </ThemeField>
       </Box>

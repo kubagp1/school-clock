@@ -1,7 +1,9 @@
 import { z } from "zod";
-import { createTRPCRouter, privateProcedure } from "../trpc";
-import { conditionSchema } from "~/utils/conditions";
+import { TRPCContext, createTRPCRouter, privateProcedure } from "../trpc";
+import { conditionSchema, defaultCondition } from "~/utils/conditions";
 import { TRPCError } from "@trpc/server";
+import { AppContextType } from "next/dist/shared/lib/utils";
+import { PrismaClient, Rule } from "@prisma/client";
 
 export const ruleRouter = createTRPCRouter({
   getAll: privateProcedure.input(z.string().min(1)).query(({ ctx, input }) => {
@@ -63,20 +65,12 @@ export const ruleRouter = createTRPCRouter({
         });
       }
 
-      const largestIndex = await ctx.prisma.rule.findFirst({
-        select: {
-          index: true,
-        },
-        where: {
-          configuration: {
-            id: input.configurationId,
-            createdById: ctx.auth.userId,
-          },
-        },
-        orderBy: {
-          index: "desc",
-        },
-      });
+      const availableIndex = await getAvailableRuleIndex(
+        ctx.prisma,
+        ctx.auth.userId,
+        input.configurationId,
+        null
+      );
 
       return ctx.prisma.rule.create({
         data: {
@@ -91,7 +85,8 @@ export const ruleRouter = createTRPCRouter({
               id: input.themeId,
             },
           },
-          index: largestIndex ? largestIndex.index + 1 : 0,
+          index: availableIndex,
+          condition: defaultCondition,
         },
       });
     }),
@@ -296,3 +291,31 @@ export const ruleRouter = createTRPCRouter({
     });
   }),
 });
+
+export async function getAvailableRuleIndex(
+  prisma: Pick<PrismaClient, "rule">,
+  userId: string,
+  configurationId: string,
+  internalGroup: Rule["internalGroup"]
+): Promise<number> {
+  const rule = await prisma.rule.findFirst({
+    select: {
+      index: true,
+    },
+    where: {
+      configuration: {
+        id: configurationId,
+        createdById: userId,
+      },
+      internalGroup,
+    },
+    orderBy: {
+      index: "desc",
+    },
+  });
+
+  if (!rule) {
+    return 0;
+  }
+  return rule.index + 1;
+}

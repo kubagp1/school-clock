@@ -12,13 +12,14 @@ datasource db {
 }
 
 model Configuration {
-  id          String     @id @default(cuid())
+  id          String       @id @default(cuid())
   name        String
-  baseTheme   Theme      @relation(fields: [baseThemeId], references: [id])
+  baseTheme   Theme        @relation(fields: [baseThemeId], references: [id])
   baseThemeId String
   createdById String
   instances   Instance[]
   rules       Rule[]
+  newsTickers NewsTicker[]
 
   @@index([createdById])
   @@index([baseThemeId])
@@ -31,6 +32,7 @@ model Theme {
   fields         ThemeField[]
   configurations Configuration[]
   rules          Rule[]
+  internal       Boolean         @default(false)
 
   @@index([createdById])
 }
@@ -39,6 +41,10 @@ enum ThemeFieldName {
   hideClock
   clockColor
   clockSize
+  newsTickerText
+  newsTickerSpeed
+  newsTickerLoop
+  newsTickerHidden
 }
 
 model ThemeField {
@@ -56,7 +62,7 @@ model Instance {
   id              String        @id @default(cuid())
   name            String
   tags            String        @default("")
-  configuration   Configuration @relation(fields: [configurationId], references: [id])
+  configuration   Configuration @relation(fields: [configurationId], references: [id], onDelete: Cascade)
   configurationId String
   secret          String        @unique @default(uuid())
   lastSeen        DateTime?
@@ -71,18 +77,34 @@ model InstanceSecretRequest {
   createdAt      DateTime @default(now())
 }
 
-model Rule {
-  id              String        @id @default(cuid())
-  name            String
-  condition       Json          @default("[]")
-  enabled         Boolean       @default(true)
-  index           Int
-  theme           Theme         @relation(fields: [themeId], references: [id])
-  themeId         String
-  configuration   Configuration @relation(fields: [configurationId], references: [id])
-  configurationId String
+enum RuleInternalGroup {
+  newsTicker
+}
 
-  @@unique([index, configurationId])
+model Rule {
+  id              String             @id @default(cuid())
+  name            String
+  index           Int
+  internalGroup   RuleInternalGroup?
+  condition       Json
+  enabled         Boolean            @default(true)
+  theme           Theme              @relation(fields: [themeId], references: [id])
+  themeId         String
+  configuration   Configuration      @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+  configurationId String
+  newsTickers     NewsTicker[]
+
+  @@unique([index, internalGroup, configurationId])
   @@index([configurationId])
   @@index([themeId])
+}
+
+model NewsTicker {
+  id              String        @id @default(cuid())
+  rule            Rule          @relation(fields: [ruleId], references: [id])
+  ruleId          String
+  configuration   Configuration @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+  configurationId String
+
+  @@index([configurationId])
 }

@@ -50,7 +50,8 @@ const ConditionEditor = (props: EditorProps) => {
       | "year"
       | "hour"
       | "minute"
-      | "second";
+      | "second"
+      | "datetime";
 
     let newCondition: Condition;
 
@@ -62,11 +63,25 @@ const ConditionEditor = (props: EditorProps) => {
           condition.operator === "eq" || condition.operator === "neq"
             ? condition.operator
             : "eq",
+        value: condition.type === "datetime" ? 0 : condition.value,
+      };
+    } else if (newType === "datetime") {
+      newCondition = {
+        ...condition,
+        type: newType,
+        value: new Date().toISOString(),
+      };
+    } else if (condition.type === "datetime") {
+      newCondition = {
+        ...condition,
+        type: newType,
+        value: 0,
       };
     } else {
       newCondition = {
         ...condition,
         type: newType,
+        value: condition.value,
       };
     }
 
@@ -205,6 +220,7 @@ const ConditionEditor = (props: EditorProps) => {
         <option value="hour">Hour</option>
         <option value="minute">Minute</option>
         <option value="second">Second</option>
+        <option value="datetime">Datetime</option>
       </select>{" "}
       <select value={condition.operator} onChange={handleOperatorChange}>
         <option value="eq">Equals</option>
@@ -218,9 +234,22 @@ const ConditionEditor = (props: EditorProps) => {
       </select>{" "}
       <input
         type="number"
-        value={condition.value}
+        value={
+          condition.type === "datetime"
+            ? new Date(condition.value).getTime()
+            : condition.value
+        }
         onChange={(e) => {
-          onChange({ ...condition, value: parseInt(e.target.value) });
+          if (condition.type === "datetime") {
+            return onChange({
+              ...condition,
+              value: new Date(parseInt(e.target.value)).toISOString(),
+            });
+          }
+          onChange({
+            ...condition,
+            value: parseInt(e.target.value),
+          });
         }}
       />
       {"  "}

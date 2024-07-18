@@ -14,6 +14,7 @@ const defaultCircumstances: Circumstances = {
   second: 0,
   weekday: 0,
   year: 0,
+  datetime: new Date(),
 };
 
 export default function RuleConditionTester(props: { condition: Condition }) {
@@ -63,7 +64,11 @@ const CircumstacesSelector = (props: {
             <td>
               <input
                 type="number"
-                value={circumstances[field]}
+                value={
+                  field === "datetime"
+                    ? circumstances[field].getTime()
+                    : circumstances[field]
+                }
                 onChange={(e) => {
                   onChange({
                     ...circumstances,

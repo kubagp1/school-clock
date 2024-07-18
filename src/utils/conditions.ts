@@ -101,6 +101,19 @@ export const secondConditionSchema = z.object({
 
 export type SecondCondition = z.infer<typeof secondConditionSchema>;
 
+export const datetimeConditionSchema = z.object({
+  type: z.literal("datetime"),
+  operator: z.union([
+    z.literal("eq"),
+    z.literal("neq"),
+    z.literal("gt"),
+    z.literal("lt"),
+  ]),
+  value: z.string(),
+});
+
+export type DatetimeCondition = z.infer<typeof datetimeConditionSchema>;
+
 export const conditionSchema = z.union([
   weekdayConditionSchema,
   booleanConditionSchema,
@@ -110,6 +123,7 @@ export const conditionSchema = z.union([
   hourConditionSchema,
   minuteConditionSchema,
   secondConditionSchema,
+  datetimeConditionSchema,
 ]);
 
 export type Condition = Prettify<z.infer<typeof conditionSchema>>;
@@ -128,11 +142,28 @@ export const circumstancesKeys = [
   "hour",
   "minute",
   "second",
+  "datetime",
 ] as const;
 
-export type Circumstances = {
-  [K in (typeof circumstancesKeys)[number]]: number;
-};
+type Assert<T extends true> = T;
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type Check = Assert<
+  Exclude<
+    Condition["type"],
+    "boolean"
+  > extends (typeof circumstancesKeys)[number]
+    ? true
+    : false
+>;
+
+export type Circumstances = Prettify<
+  {
+    [K in Exclude<(typeof circumstancesKeys)[number], "datetime">]: number;
+  } & {
+    datetime: Date;
+  }
+>;
 
 export function isConditionTrue(
   condition: Condition,
@@ -165,6 +196,11 @@ function isSimpleConditionTrue(
   circumstances: Circumstances
 ): boolean {
   const { type, operator, value } = condition;
+
+  if (type === "datetime") {
+    return isDatetimeConditionTrue(operator, circumstances[type], value);
+  }
+
   const circumstance = circumstances[type];
 
   switch (operator) {
@@ -176,6 +212,25 @@ function isSimpleConditionTrue(
       return circumstance > value;
     case "lt":
       return circumstance < value;
+  }
+}
+
+function isDatetimeConditionTrue(
+  operator: DatetimeCondition["operator"],
+  circumstance: Date,
+  value: string
+): boolean {
+  const dateValue = new Date(value);
+
+  switch (operator) {
+    case "eq":
+      return circumstance.getTime() === dateValue.getTime();
+    case "neq":
+      return circumstance.getTime() !== dateValue.getTime();
+    case "gt":
+      return circumstance.getTime() > dateValue.getTime();
+    case "lt":
+      return circumstance.getTime() < dateValue.getTime();
   }
 }
 
