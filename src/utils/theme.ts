@@ -54,7 +54,7 @@ export const defaultThemeFields = {
   },
   clockSize: {
     name: "clockSize",
-    value: 64,
+    value: 384,
     enabled: false,
   },
   hideClock: {

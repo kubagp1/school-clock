@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
 import { type RouterOutputs, api } from "~/utils/api";
 import { useInstanceSecret } from "./InstanceSecretProvider";
+import { StartupMessage } from "./StartupMessage";
 
 type InstanceContextState = RouterOutputs["instance"]["getBySecret"];
 
@@ -27,8 +28,10 @@ export const InstanceProvider = ({
     refetchOnWindowFocus: false,
   });
 
-  if (isLoading) return <div>Loading instance</div>;
-  if (isError) return <div>Error loading instance.</div>; //TODO: better error handling, see #17
+  if (isLoading)
+    return <StartupMessage type="loading">Loading instance</StartupMessage>;
+  if (isError)
+    return <StartupMessage type="error">Error loading instance</StartupMessage>; //TODO: better error handling, see #17
 
   return (
     <InstanceContext.Provider value={instance}>
