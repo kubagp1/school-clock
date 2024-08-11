@@ -35,11 +35,41 @@ export function RequestInstanceSecretView(props: Props) {
   );
 
   return (
-    <div>
-      <h1>Request Instance Secret</h1>
-      {isLoading && <p>Loading...</p>}
-      {isError && <p>Error</p>}
-      {secretRequest && "Request code: " + secretRequest.requestCode}
+    <div
+      style={{
+        backgroundColor: "black",
+        color: "white",
+        width: "100vw",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <span style={{ fontSize: "64px" }}>Pair this device</span>
+      <span>
+        For more information see:{" "}
+        <a
+          style={{
+            color: "white",
+          }}
+          href="#"
+        >
+          https://todo.com/make-docs
+        </a>
+      </span>
+      <div style={{ marginBlock: "32px" }}>
+        {isLoading && <p>Loading pairing code...</p>}
+        {isError && <p>Error loading pairing code</p>}
+        {secretRequest &&
+          "Pairing code: " + formatRequestCode(secretRequest.requestCode)}
+      </div>
     </div>
   );
+}
+
+function formatRequestCode(code: string) {
+  // 123456789 => 123 456 789, 12345678 => 123 456 78 ...
+  return code.replace(/(\d{3})(?=\d)/g, "$1 ");
 }
