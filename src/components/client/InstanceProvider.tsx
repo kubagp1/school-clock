@@ -8,7 +8,7 @@ type InstanceContextState = RouterOutputs["instance"]["getBySecret"];
 export type Instance = InstanceContextState;
 
 export const InstanceContext = createContext<InstanceContextState | undefined>(
-  undefined
+  undefined,
 );
 
 export const InstanceProvider = ({
@@ -29,7 +29,7 @@ export const InstanceProvider = ({
   });
 
   if (isLoading)
-    return <StartupMessage type="loading">Loading instance</StartupMessage>;
+    return <StartupMessage type="loading">Loading instance...</StartupMessage>;
   if (isError)
     return <StartupMessage type="error">Error loading instance</StartupMessage>; //TODO: better error handling, see #17
 
