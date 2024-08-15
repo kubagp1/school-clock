@@ -2,6 +2,7 @@ import { type AppProps, type AppType } from "next/app";
 import { api } from "~/utils/api";
 import "~/styles/globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
 import { type NextPage } from "next";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { type ReactElement, type ReactNode } from "react";
@@ -26,7 +27,7 @@ const MyApp: AppType = ({ Component, pageProps }: AppPropsWithLayout) => {
   const getLayout = Component.getLayout ?? ((page) => page);
 
   return (
-    <ClerkProvider {...pageProps}>
+    <ClerkProvider {...pageProps} appearance={{ baseTheme: dark }}>
       {getLayout(<Component {...pageProps} />)}
       <ReactQueryDevtools initialIsOpen={false} />
     </ClerkProvider>
