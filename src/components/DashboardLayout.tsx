@@ -1,55 +1,65 @@
 import { UserButton } from "@clerk/nextjs";
-import {
-  Box,
-  AppBar,
-  Toolbar,
-  Typography,
-  Container,
-  Link,
-  useMediaQuery,
-} from "@mui/material";
+import { GeistSans } from "geist/font/sans";
 import { type ReactElement } from "react";
-import NextLink from "next/link";
-import { useTheme } from "@mui/material/styles";
-import { useRouter } from "next/router";
+import Link from "next/link";
+import clsx from "clsx";
+import { dark as darkClerkTheme } from "@clerk/themes";
+import { cn } from "~/utils/tailwindHelper";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "./ui/breadcrumb";
 
-const DashboardLayout = ({ children }: { children: ReactElement }) => {
-  const router = useRouter();
-  const disableGutters =
-    !useMediaQuery(useTheme().breakpoints.up("sm")) &&
-    router.pathname !== "/dashboard";
+const DashboardLayout = ({
+  children,
+  breadcrumbs,
+}: {
+  children: ReactElement;
+  breadcrumbs: ReactElement;
+}) => {
   return (
-    <Box
-      sx={{
-        height: "100vh",
-        bgcolor: "#f5f5f5",
-      }}
+    <div
+      className={clsx(
+        GeistSans.className,
+        "dark h-screen bg-black text-neutral-100",
+      )}
     >
-      <AppBar sx={{ bgcolor: "#fefefe", color: "#010101" }} elevation={2}>
-        <Toolbar>
-          <Box sx={{ flexGrow: 1 }}>
-            <Link component={NextLink} href="/dashboard" underline="none">
-              <Typography variant="h6" component="span">
-                school-clock Dashboard
-              </Typography>
-            </Link>
-          </Box>
-          <UserButton showName />
-        </Toolbar>
-      </AppBar>
-      <Toolbar />
-      <Box>
-        <Container
-          disableGutters={disableGutters}
-          sx={disableGutters ? null : { pt: 2 }}
-        >
-          {children}
-        </Container>
-      </Box>
-    </Box>
+      <div className="flex flex-row items-center justify-between border-b border-neutral-800 bg-neutral-950 px-6 py-4">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink
+                href="/"
+                className="inline-block text-lg hover:underline"
+                title="Home page"
+              >
+                <Logo className="text-neutral-100" />
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator></BreadcrumbSeparator>
+            {breadcrumbs}
+          </BreadcrumbList>
+        </Breadcrumb>
+
+        <UserButton showName appearance={{ baseTheme: darkClerkTheme }} />
+      </div>
+
+      <div className="container mx-auto max-w-[1360px] pt-4">{children}</div>
+    </div>
   );
 };
 
-export const getDashboardLayout = (page: ReactElement) => (
-  <DashboardLayout>{page}</DashboardLayout>
+const Logo = (props: { className?: string }) => (
+  <span className={cn("text-lg", props.className)}>
+    school <span className="font-black">:</span> clock
+  </span>
 );
+
+export const getDashboardLayout = (
+  page: ReactElement,
+  breadcrumbs: ReactElement,
+) => <DashboardLayout breadcrumbs={breadcrumbs}>{page}</DashboardLayout>;

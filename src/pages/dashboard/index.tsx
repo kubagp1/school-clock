@@ -9,13 +9,14 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { Fragment } from "react";
+import { Fragment, ReactElement } from "react";
 import { api } from "~/utils/api";
 import NextLink from "next/link";
 import { getDashboardLayout } from "~/components/DashboardLayout";
 import Head from "next/head";
 import { CenteredLoading } from "~/components/Loading";
 import ErrorOutline from "@mui/icons-material/ErrorOutline";
+import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
 
 function Error(props: { message: string }) {
   return (
@@ -134,7 +135,7 @@ function Dashboard() {
   return (
     <>
       <Head>
-        <title>Dashboard</title>
+        <title>Dashboard - school:clock</title>
       </Head>
       <Typography variant="h4">
         {isUserLoaded && user !== null ? (
@@ -185,6 +186,13 @@ function Dashboard() {
   );
 }
 
-Dashboard.getLayout = getDashboardLayout;
+const breadcrumbs = (
+  <BreadcrumbItem>
+    <BreadcrumbPage>Dashboard</BreadcrumbPage>
+  </BreadcrumbItem>
+);
+
+Dashboard.getLayout = (page: ReactElement) =>
+  getDashboardLayout(page, breadcrumbs);
 
 export default Dashboard;
