@@ -1,42 +1,52 @@
-import { useUser } from "@clerk/nextjs";
-import {
-  Box,
-  Button,
-  Divider,
-  Grid,
-  Link,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
-import { Fragment, ReactElement } from "react";
+import { ReactElement, ReactNode } from "react";
 import { api } from "~/utils/api";
 import NextLink from "next/link";
 import { getDashboardLayout } from "~/components/DashboardLayout";
 import Head from "next/head";
 import { CenteredLoading } from "~/components/Loading";
-import ErrorOutline from "@mui/icons-material/ErrorOutline";
 import { BreadcrumbItem, BreadcrumbPage } from "~/components/ui/breadcrumb";
+import {
+  ChartColumnIncreasing,
+  CircleAlert,
+  ListChecks,
+  MonitorCheck,
+  MonitorX,
+  Plus,
+  SlidersHorizontal,
+} from "lucide-react";
+import { cn } from "~/utils/utils";
+import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
 
 function Error(props: { message: string }) {
   return (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        flexDirection: "column",
-        gap: 1,
-        my: 2,
-        px: 2,
-        textAlign: "center",
-      }}
-    >
-      <ErrorOutline fontSize="large" />
-      <Typography variant="h5">Error</Typography>
-      <Typography variant="body1">{props.message}</Typography>
-    </Box>
+    <div className="flex flex-col items-center gap-2 rounded-lg border border-neutral-800 p-6">
+      <CircleAlert />
+      <div className="text-neutral-400">{props.message}</div>
+    </div>
   );
 }
+
+function bagdeFormatText(count: number, singular: string, plural: string) {
+  return `${count} ${count == 1 ? singular : plural}`;
+}
+
+function getOnlineInstacesCount(instances: { lastSeen: Date | null }[]) {
+  // instance is online if it was seen in the last 1 hour
+  const now = new Date();
+  return instances.filter(
+    (i) => i.lastSeen && i.lastSeen.getTime() > now.getTime() - 60 * 60 * 1000,
+  ).length;
+}
+
+function getOfflineInstacesCount(instances: { lastSeen: Date | null }[]) {
+  return instances.length - getOnlineInstacesCount(instances);
+}
+
+const BAGDE_ICON_PROPS = {
+  size: 13,
+  className: "mr-1",
+};
 
 function Configurations() {
   const { data, isError, isLoading } = api.configuration.getAll.useQuery();
@@ -46,48 +56,51 @@ function Configurations() {
   if (isError)
     return (
       <Error
-        message="An error occured loading your configurations. Please try again
+        message="An error occured while loading your configurations. Please try again
       later."
       />
     );
 
-  return data.map((cfg, i) => (
-    <Fragment key={cfg.id}>
-      {i != 0 && <Divider />}
-      <Box sx={{ p: 2 }}>
-        <Link
-          component={NextLink}
-          href={`/dashboard/configuration/${cfg.id}`}
-          underline="hover"
-        >
-          <Typography variant="h6">{cfg.name}</Typography>
-        </Link>
-        <Box sx={{ mb: 1 }}></Box>
-        <table style={{ borderSpacing: "0px", minWidth: "50%" }}>
-          <tbody>
-            <tr>
-              <td>
-                <b>Base theme</b>
-              </td>
-              <td>{cfg.baseTheme.name}</td>
-            </tr>
-            <tr>
-              <td>
-                <b>Rules</b>
-              </td>
-              <td>{cfg.rules.map((r) => r.name).join(", ")}</td>
-            </tr>
-            <tr>
-              <td>
-                <b>Instances</b>
-              </td>
-              <td>{cfg.instances.map((i) => i.name).join(", ")}</td>
-            </tr>
-          </tbody>
-        </table>
-      </Box>
-    </Fragment>
+  const configurations = data.map((cfg, i) => (
+    <NextLink
+      href={`/dashboard/configuration/${cfg.id}`}
+      key={cfg.id}
+      className="group block border-b border-neutral-800 p-4 last:border-none"
+    >
+      <div className="pb-2 font-medium group-hover:underline">{cfg.name}</div>
+      <div className="flex gap-2">
+        <Badge variant="outline">
+          <SlidersHorizontal {...BAGDE_ICON_PROPS} />
+          {bagdeFormatText(cfg.rules.length, "Rule", "Rules")}
+        </Badge>
+        <Badge variant="outline">
+          <MonitorCheck {...BAGDE_ICON_PROPS} />
+          {bagdeFormatText(
+            getOnlineInstacesCount(cfg.instances),
+            "Online Instance",
+            "Online Instances",
+          )}
+        </Badge>
+        {getOfflineInstacesCount(cfg.instances) > 0 && (
+          <Badge
+            variant="outline"
+            className="border-red-600 dark:border-red-600"
+          >
+            <MonitorX {...BAGDE_ICON_PROPS} />
+            {bagdeFormatText(
+              getOfflineInstacesCount(cfg.instances),
+              "Offline Instance",
+              "Offline Instances",
+            )}
+          </Badge>
+        )}
+      </div>
+    </NextLink>
   ));
+
+  return (
+    <div className="rounded-lg border border-neutral-800">{configurations}</div>
+  );
 }
 
 function Themes() {
@@ -97,91 +110,80 @@ function Themes() {
   if (isError)
     return (
       <Error
-        message="An error occured loading your themes. Please try again
+        message="An error occured while loading your themes. Please try again
   later."
       />
     );
 
-  return data.map((theme, i) => (
-    <Fragment key={theme.id}>
-      {i != 0 && <Divider />}
-      <Box sx={{ p: 2 }}>
-        <Link
-          component={NextLink}
-          href={`/dashboard/theme/${theme.id}`}
-          underline="hover"
-        >
-          <Typography variant="h6">{theme.name}</Typography>
-        </Link>
-        <Box sx={{ mb: 1 }}></Box>
-        <table style={{ borderSpacing: "0px", minWidth: "50%" }}>
-          <tbody>
-            <tr>
-              <td>
-                <b>Enabled fields</b>
-              </td>
-              <td>{theme.enabledFieldsCount}</td>
-            </tr>
-          </tbody>
-        </table>
-      </Box>
-    </Fragment>
-  ));
+  const themes = data
+    .filter((theme) => !theme.internal)
+    .map((theme, i) => (
+      <NextLink
+        key={theme.id}
+        href={`/dashboard/theme/${theme.id}`}
+        className="group block border-b border-neutral-800 p-4 last:border-none"
+      >
+        <div className="pb-2 font-medium group-hover:underline">
+          {theme.name}
+        </div>
+        <div className="flex gap-2">
+          <Badge variant="outline">
+            <ListChecks {...BAGDE_ICON_PROPS} />
+            {bagdeFormatText(
+              theme.enabledFieldsCount,
+              "Enabled Field",
+              "Enabled Fields",
+            )}
+          </Badge>
+          <Badge variant="outline">
+            <ChartColumnIncreasing {...BAGDE_ICON_PROPS} />
+            {bagdeFormatText(3, "Use", "Uses")}
+            {/* TODO: Implement this stat */}
+          </Badge>
+        </div>
+      </NextLink>
+    ));
+
+  return <div className="rounded-lg border border-neutral-800">{themes}</div>;
 }
 
 function Dashboard() {
-  const { user, isLoaded: isUserLoaded } = useUser();
-
   return (
     <>
       <Head>
         <title>Dashboard - school:clock</title>
       </Head>
-      <Typography variant="h4">
-        {isUserLoaded && user !== null ? (
-          <>
-            Hello <b>{user.username}</b>!
-          </>
-        ) : (
-          "Hello!"
-        )}
-      </Typography>
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
-          <Stack sx={{ mt: 2 }}>
-            <Paper>
-              <Typography variant="h5" sx={{ py: 1.5, p: 2 }}>
-                Configurations
-              </Typography>
-              <Divider />
-              <Configurations />
-              <Divider />
-              <Box sx={{ display: "flex", justifyContent: "center" }}>
-                <NextLink href="/dashboard/new-configuration">
-                  <Button sx={{ m: 2 }}>New configuration</Button>
-                </NextLink>
-              </Box>
-            </Paper>
-          </Stack>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <Stack sx={{ mt: 2 }}>
-            <Paper>
-              <Typography variant="h5" sx={{ py: 1.5, p: 2 }}>
-                Themes
-              </Typography>
-              <Divider />
-              <Themes />
-              <Divider />
-              <Box sx={{ display: "flex", justifyContent: "center" }}>
-                <NextLink href="/dashboard/new-theme">
-                  <Button sx={{ m: 2 }}>New theme</Button>
-                </NextLink>
-              </Box>
-            </Paper>
-          </Stack>
-        </Grid>
-      </Grid>
+
+      <div className="flex flex-row gap-16">
+        <div className="w-1/2">
+          <div className="flex items-center justify-between pb-1 pt-3 font-medium">
+            <div>Configurations</div>
+            <Button variant="ghost" size="icon">
+              <Plus className="cursor-pointer text-neutral-300 hover:text-inherit" />
+            </Button>
+          </div>
+          <Configurations />
+          <div className="flex justify-center py-4">
+            <Button variant="outline" className="mx-auto">
+              <Plus className="pr-2" /> Add Configuration
+            </Button>
+          </div>
+        </div>
+        <div className="w-1/2">
+          <div className="flex items-center justify-between pb-1 pt-3 font-medium">
+            <div>Themes</div>
+            <Button variant="ghost" size="icon">
+              <Plus className="cursor-pointer text-neutral-300 hover:text-inherit" />
+            </Button>
+          </div>
+          <Themes />
+          <div className="flex justify-center py-4">
+            <Button variant="outline" className="mx-auto">
+              <Plus className="pr-2" /> Add Theme
+            </Button>
+          </div>
+        </div>
+      </div>
     </>
   );
 }
