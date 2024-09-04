@@ -4,7 +4,7 @@ import { type ReactElement } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import { dark as darkClerkTheme } from "@clerk/themes";
-import { cn } from "~/utils/tailwindHelper";
+import { cn } from "~/utils/utils";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -25,7 +25,7 @@ const DashboardLayout = ({
     <div
       className={clsx(
         GeistSans.className,
-        "dark h-screen bg-black text-neutral-100",
+        "dark min-h-screen bg-black text-neutral-100",
       )}
     >
       <div className="flex flex-row items-center justify-between border-b border-neutral-800 bg-neutral-950 px-6 py-4">
