@@ -1,7 +1,6 @@
 import { UserButton } from "@clerk/nextjs";
 import { GeistSans } from "geist/font/sans";
 import { type ReactElement } from "react";
-import Link from "next/link";
 import clsx from "clsx";
 import { dark as darkClerkTheme } from "@clerk/themes";
 import { cn } from "~/utils/utils";
